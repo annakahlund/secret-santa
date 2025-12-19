@@ -96,6 +96,20 @@
     const groupId = "familj2025";
 
     const $giver = document.getElementById("giver");
+    // --- Unika länkar: lås användaren till sitt eget namn ---
+const urlParams = new URLSearchParams(window.location.search);
+const forcedGiver = urlParams.get("giver");
+
+if (forcedGiver) {
+  // Sätt rätt namn direkt
+  fillDropdown([forcedGiver]);
+
+  // Visa status
+  setStatus(`Du drar åt: ${forcedGiver}`);
+
+  // Lås dropdownen
+  $giver.disabled = true;
+}
     const $status = document.getElementById("status");
     const $result = document.getElementById("result");
     const $drawBtn = document.getElementById("drawBtn");
