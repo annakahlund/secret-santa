@@ -1,22 +1,48 @@
-
 <!DOCTYPE html>
 <html lang="sv">
 <head>
   <meta charset="UTF-8" />
   <title>Familjen Åhlunds Secret Santa 2025 🎅</title>
 
-  <!-- Supabase JS v2 via jsDelivr (UMD, global "supabase"). "defer" så att den laddas innan vår app-kod körs. -->
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" defer></script>
-
+  <!-- Supabase JS v2 via jsDelivr (UMD, global "supabase"). -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" defer></script>
 
   <style>
-    body { font-family: sans-serif; background: #fff0f5; padding: 40px; max-width: 650px; margin: auto; text-align: center; }
+    body {
+      font-family: sans-serif;
+      background: #fff0f5;
+      padding: 40px;
+      max-width: 650px;
+      margin: auto;
+      text-align: center;
+    }
     h2 { color: #d6336c; }
-    select, button { width: 80%; padding: 12px; margin-top: 16px; font-size: 16px; }
-    button { background-color: #28a745; color: white; border: none; cursor: pointer; border-radius: 5px; }
-    button:hover { background-color: #218838; }
-    #result { margin-top: 20px; font-size: 18px; font-weight: bold; }
-    #status { margin-top: 8px; color: #6c757d; font-size: 14px; }
+    select, button {
+      width: 80%;
+      padding: 12px;
+      margin-top: 16px;
+      font-size: 16px;
+    }
+    button {
+      background-color: #28a745;
+      color: white;
+      border: none;
+      cursor: pointer;
+      border-radius: 5px;
+    }
+    button:hover {
+      background-color: #218838;
+    }
+    #result {
+      margin-top: 20px;
+      font-size: 18px;
+      font-weight: bold;
+    }
+    #status {
+      margin-top: 8px;
+      color: #6c757d;
+      font-size: 14px;
+    }
   </style>
 </head>
 <body>
@@ -27,13 +53,17 @@
   <p id="result"></p>
   <p id="status"></p>
 
-  <!-- Vår app-kod körs efter att Supabase-CDN har laddats tack vare defer -->
+  <!-- App-kod. Körs efter att Supabase-CDN har laddats tack vare defer. -->
   <script defer>
     // ------ Konfiguration ------
     const SUPABASE_URL = "https://qktwixlydcpjuvnbgxza.supabase.co";
     const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFrdHdpeGx5ZGNwanV2bmJneHphIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjYwODE3NzgsImV4cCI6MjA4MTY1Nzc3OH0.9Z4yEXtsO6rXPutvzmymFeu-KvQA4_604pJfDt0XzQU";
 
-    const PARTICIPANTS = ["Iren","Jonas","Joakim","Dunis","Juli","Sam","Klas","Martha","Ia","Lita","Kennedy","Johannes","Rebecka","Betty","Bodil","Anna","Essi","Udo"];
+    const PARTICIPANTS = [
+      "Iren","Jonas","Joakim","Dunis","Juli","Sam","Klas","Martha",
+      "Ia","Lita","Kennedy","Johannes","Rebecka","Betty","Bodil",
+      "Anna","Essi","Udo"
+    ];
     const groupId = "familj2025";
 
     // ------ Hjälp/DOM ------
@@ -42,13 +72,21 @@
     const $result = document.getElementById("result");
     const $drawBtn = document.getElementById("drawBtn");
 
-    function setStatus(msg) { $status.textContent = msg ?? ""; }
-    function log(...args) { console.log("[SecretSanta]", ...args); }
+    function setStatus(msg) {
+      $status.textContent = msg ?? "";
+    }
+
+    function log(...args) {
+      console.log("[SecretSanta]", ...args);
+    }
 
     function fillDropdown(names) {
       $giver.innerHTML = "";
       if (!names || names.length === 0) {
-        $giver.innerHTML = '<option>Alla har dragit 🎄</option>';
+        const opt = document.createElement("option");
+        opt.value = "";
+        opt.textContent = "Alla har dragit 🎄";
+        $giver.appendChild(opt);
         return;
       }
       for (const name of names) {
@@ -65,14 +103,15 @@
     // ------ Supabase init via CDN (UMD) ------
     (async function init() {
       try {
+        // Kontroll: finns global "supabase"?
         if (typeof supabase === "undefined") {
-          setStatus("Kunde inte ladda Supabase-klienten. Kontrollera nätverk/CSP.");
+          setStatus("Kunde inte ladda Supabase-klienten. Kontrollera nätverk.");
           console.error("Supabase CDN kunde inte laddas (global 'supabase' saknas).");
           return;
         }
 
-        const { createClient } = supabase; // enligt UMD-sättet
-        const db = createClient(SUPABASE_URL, SUPABASE_KEY); // klient
+        // UMD-sättet: supabase.createClient(...)
+        const db = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
         // 1) Se till att gruppen finns
         await ensureGroup(db);
@@ -82,6 +121,7 @@
 
         // 3) Knyt knapp
         $drawBtn.addEventListener("click", () => draw(db));
+
         setStatus("Klar.");
       } catch (e) {
         setStatus("Ett fel uppstod vid init.");
@@ -94,16 +134,19 @@
       let receivers;
       do {
         receivers = [...names];
+        // Fisher–Yates-shuffle
         for (let i = receivers.length - 1; i > 0; i--) {
           const j = Math.floor(Math.random() * (i + 1));
           [receivers[i], receivers[j]] = [receivers[j], receivers[i]];
         }
-      } while (names.some((n, i) => n === receivers[i]));
+      } while (names.some((n, i) => n === receivers[i])); // se till att ingen får sig själv
+
       return Object.fromEntries(names.map((n, i) => [n, receivers[i]]));
     }
 
     async function ensureGroup(db) {
       setStatus("Initierar grupp...");
+
       const { data, error } = await db
         .from("secret_santa_groups")
         .select("group_id")
@@ -111,8 +154,8 @@
         .maybeSingle();
 
       if (error) {
-        // Notera: RLS SELECT krävs för detta; om det saknas skapar vi ändå lokalt och försöker INSERT.
-        log("Fel vid select groups (kan vara RLS):", error);
+        // RLS SELECT kan fela; vi försöker skapa grupp ändå.
+        log("Fel vid select secret_santa_groups (kan vara RLS):", error);
       }
 
       if (!data) {
@@ -120,8 +163,9 @@
         const { error: insErr } = await db
           .from("secret_santa_groups")
           .insert({ group_id: groupId, assignments }, { returning: "minimal" });
+
         if (insErr) {
-          log("Fel vid insert groups (kan vara RLS):", insErr);
+          log("Fel vid insert secret_santa_groups (kan vara RLS):", insErr);
         } else {
           log("Grupp skapad.");
         }
@@ -132,13 +176,14 @@
 
     async function refreshRemaining(db) {
       setStatus("Laddar dragna givare...");
+
       const { data, error } = await db
         .from("secret_santa")
         .select("giver")
         .eq("group_id", groupId);
 
       if (error) {
-        // Om SELECT blockeras av RLS, behåll alla namn (dvs dropdownen visar redan alla).
+        // Om SELECT blockeras av RLS, behåll alla namn
         log("Kunde inte läsa secret_santa (RLS/policy?):", error);
         setStatus("Klar (kunde inte läsa dragna namn, visar alla).");
         return;
@@ -146,6 +191,7 @@
 
       const used = (data || []).map(r => r.giver);
       const remaining = PARTICIPANTS.filter(n => !used.includes(n));
+
       fillDropdown(remaining);
       setStatus("Klar.");
     }
@@ -176,14 +222,19 @@
       const { error: insErr } = await db
         .from("secret_santa")
         .insert({ group_id: groupId, giver, receiver }, { returning: "minimal" });
+
       if (insErr) {
         $result.textContent = "Kunde inte spara dragningen (kontrollera RLS/policy).";
         console.error("Fel vid insert secret_santa:", insErr);
         return;
       }
 
-      $result.textContent = `🎄 ${giver} fick: ${receiver      $result.textContent = `🎄 ${giver} fick: ${receiver}`;
+      // DEN HÄR RADEN VAR FEL FÖRUT – nu är den korrekt:
+      $result.textContent = `🎄 ${giver} fick: ${receiver}`;
+
+      // Uppdatera dropdownen med de återstående givarna
       await refreshRemaining(db);
     }
   </script>
 </body>
+</html>
