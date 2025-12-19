@@ -1,88 +1,147 @@
+
 <!DOCTYPE html>
 <html lang="sv">
 <head>
-<meta charset="UTF-8">
-<title>Familjen Åhlunds Secret Santa 2025 🎅</title>
-<script src="https://unpkg.com/@supabase/supabase-js@2"></script>
-<style>
-body { font-family: sans-serif; background: #fff0f5; padding: 40px; max-width: 650px; margin: auto; text-align: center; }6
-h2 { color: #d6336c; }
-select, button { width: 80%; padding: 12px; margin-top: 16px; font-size: 16px; }
-button { background-color: #28a745; color: white; border: none; cursor: pointer; border-radius: 5px; }
-button:hover { background-color: #218838; }
-#result { margin-top: 20px; font-size: 18px; font-weight: bold; }
-</style>
+  <meta charset="UTF-8" />
+  <title>Familjen Åhlunds Secret Santa 2025 🎅</title>
+
+  <!-- Supabase JS v2 via CDN (UMD, global "supabase") -->
+  <script src="https://unpkge/supabase-js@2</script>
+
+  <style>
+    body { font-family: sans-serif; background: #fff0f5; padding: 40px; max-width: 650px; margin: auto; text-align: center; }
+    h2 { color: #d6336c; }
+    select, button { width: 80%; padding: 12px; margin-top: 16px; font-size: 16px; }
+    button { background-color: #28a745; color: white; border: none; cursor: pointer; border-radius: 5px; }
+    button:hover { background-color: #218838; }
+    #result { margin-top: 20px; font-size: 18px; font-weight: bold; }
+  </style>
 </head>
 <body>
-<h2>🎁 Familjen Åhlunds häftiga Secret Santa 2025 🎁</h2>
-<p>Välj vem som ska dra:</p>
-<select id="giver"></select>
-<button onclick="draw()">Dra namn</button>
-<p id="result"></p>
+  <h2>🎁 Familjen Åhlunds häftiga Secret Santa 2025 🎁</h2>
+  <p>Välj vem som ska dra:</p>
+  <select id="giver"></select>
+  <button id="drawBtn">Dra namn</button>
+  <p id="result"></p>
 
-<script>
-const SUPABASE_URL = "https://qktwixlydcpjuvnbgxza.supabase.co";
-const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFrdHdpeGx5ZGNwanV2bmJneHphIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjYwODE3NzgsImV4cCI6MjA4MTY1Nzc3OH0.9Z4yEXtsO6rXPutvzmymFeu-KvQA4_604pJfDt0XzQU";
-const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+  <script>
+    // --- Supabase config ---
+    const SUPABASE_URL = "https://qktwixlydcpjuvnbgxza.supabase.co";
+    const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFrdHdpeGx5ZGNwanV2bmJneHphIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjYwODE3NzgsImV4cCI6MjA4MTY1Nzc3OH0.9Z4yEXtsO6rXPutvzmymFeu-KvQA4_604pJfDt0XzQU";
 
-// Lista på deltagare
-const PARTICIPANTS = ["Iren","Jonas","Joakim","Dunis","Juli","Sam","Klas","Martha","Ia","Lita","Kennedy","Johannes","Rebecka","Betty","Bodil","Anna","Essi","Udo"];
-const groupId = "familj2025";
+    // Rätt initiering via CDN: plocka ut createClient och använd en separat klientvariabel (db)
+    const { createClient } = supabase;
+    const db = createClient(SUPABASE_URL, SUPABASE_KEY);
 
-// Skapa säker lottning
-function createAssignments(names) {
-let receivers;
-do {
-receivers = [...names];
-for (let i = receivers.length - 1; i > 0; i--) {
-const j = Math.floor(Math.random() * (i + 1));
-[receivers[i], receivers[j]] = [receivers[j], receivers[i]];
-}
-} while (names.some((n,i) => n === receivers[i]));
-return Object.fromEntries(names.map((n,i)=>[n, receivers[i]]));
-}
+    // --- Appdata ---
+    const PARTICIPANTS = ["Iren","Jonas","Joakim","Dunis","Juli","Sam","Klas","Martha","Ia","Lita","Kennedy","Johannes","Rebecka","Betty","Bodil","Anna","Essi","Udo"];
+    const groupId = "familj2025";
 
-// Initiera grupp
-async function ensureGroup() {
-const { data } = await supabase.from("secret_santa_groups").select("*").eq("group_id", groupId).single();
-if (!data) {
-const assignments = createAssignments(PARTICIPANTS);
-await supabase.from("secret_santa_groups").insert({ group_id: groupId, assignments });
-}
-}
+    // --- Hjälpfunktion: skapa slumpad lottning där ingen får sig själv ---
+    function createAssignments(names) {
+      let receivers;
+      do {
+        receivers = [...names];
+        for (let i = receivers.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [receivers[i], receivers[j]] = [receivers[j], receivers[i]];
+        }
+      } while (names.some((n, i) => n === receivers[i]));
+      return Object.fromEntries(names.map((n, i) => [n, receivers[i]]));
+    }
 
-// Ladda givers som inte dragit ännu
-async function loadGivers() {
-const { data } = await supabase.from("secret_santa").select("giver").eq("group_id", groupId);
-const used = data.map(x => x.giver);
-const select = document.getElementById("giver");
-select.innerHTML = "";
-PARTICIPANTS.filter(name => !used.includes(name)).forEach(name => {
-const option = document.createElement("option");
-option.value = name;
-option.textContent = name;
-select.appendChild(option);
-});
-if (!select.children.length) {
-select.innerHTML = "<option>Alla har dragit 🎄</option>";
-}
-}
+    // --- Initiera grupp (skapa assignments om den inte finns) ---
+    async function ensureGroup() {
+      const { data, error } = await db
+        .from("secret_santa_groups")
+        .select("*")
+        .eq("group_id", groupId)
+        .single();
 
-// Dra namn
-async function draw() {
-const giver = document.getElementById("giver").value;
-if (!giver) return;
+      // error.code === "PGRST116" innebär "Row not found" från .single()
+      if (error && error.code !== "PGRST116") {
+        console.warn("Fel vid select secret_santa_groups:", error);
+      }
 
-const { data: group } = await supabase.from("secret_santa_groups").select("assignments").eq("group_id", groupId).single();
-const receiver = group.assignments[giver];
+      if (!data) {
+        const assignments = createAssignments(PARTICIPANTS);
+        const { error: insErr } = await db
+          .from("secret_santa_groups")
+          .insert({ group_id: groupId, assignments }, { returning: "minimal" }); // undvik implicit select vid RLS
+        if (insErr) {
+          console.error("Fel vid insert secret_santa_groups:", insErr);
+        }
+      }
+    }
 
-await supabase.from("secret_santa").insert({ group_id: groupId, giver, receiver });
-document.getElementById("result").innerText = `🎄 ${giver} fick: ${receiver}`;
-loadGivers();
-}
+    // --- Ladda givare som inte dragit ännu och fyll dropdown ---
+    async function loadGivers() {
+      const select = document.getElementById("giver");
+      select.innerHTML = "";
 
-// Start
-ensureGroup().then(loadGivers);
-</script>
-</body>
-</html>
+      const { data, error } = await db
+        .from("secret_santa")
+        .select("giver")
+        .eq("group_id", groupId);
+
+      let used = [];
+      if (error) {
+        console.warn("Fel vid select secret_santa (RLS/policy?):", error);
+        // Fallback: anta att ingen har dragit om läsning blockeras
+        used = [];
+      } else {
+        used = (data || []).map(x => x.giver);
+      }
+
+      const remaining = PARTICIPANTS.filter(name => !used.includes(name));
+      if (remaining.length === 0) {
+        select.innerHTML = '<option>Alla har dragit 🎄</option>';
+      } else {
+        remaining.forEach(name => {
+          const option = document.createElement("option");
+          option.value = name;
+          option.textContent = name;
+          select.appendChild(option);
+        });
+      }
+    }
+
+    // --- Dra och spara resultatet ---
+    async function draw() {
+      const giver = document.getElementById("giver").value;
+      if (!giver) return;
+
+      const { data: group, error } = await db
+        .from("secret_santa_groups")
+        .select("assignments")
+        .eq("group_id", groupId)
+        .single();
+
+      if (error || !group) {
+        document.getElementById("result").innerText =
+          "Kunde inte hämta lottning (saknas policy/anslutning).";
+        console.error("Fel vid select secret_santa_groups:", error);
+        return;
+      }
+
+      const receiver = group.assignments[giver];
+
+      const { error: insErr } = await db
+        .from("secret_santa")
+        .insert({ group_id: groupId, giver, receiver }, { returning: "minimal" }); // undvik implicit select
+      if (insErr) {
+        document.getElementById("result").innerText =
+          "Kunde inte spara dragningen (kontrollera RLS/policy).";
+        console.error("Fel vid insert secret_santa:", insErr);
+        return;
+      }
+
+      document.getElementById("result").innerText = `🎄 ${giver} fick: ${receiver}`;
+      loadGivers();
+    }
+
+    // --- Start ---
+    document.getElementById("drawBtn").addEventListener("click", draw);
+    ensureGroup().then(loadGivers);
+  </script>
+</</body>
