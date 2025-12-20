@@ -10,125 +10,25 @@
     font-family: Arial, sans-serif;
     padding: 20px;
   }
-
-  .pin-input {
-    width: 40px;
-    height: 50px;
-    font-size: 32px;
-    text-align: center;
-  }
-
-  #main-section {
-    display: none;
-  }
-
-  #confirm-section {
-    display: none;
-  }
 </style>
 </head>
 
 <body>
 
-<!-- PIN-INMATNING -->
-<div id="pin-section">
-  <h2>Skriv in din PIN-kod</h2>
+<h2>🎁 Secret Santa</h2>
+<p>Välj vem som ska dra:</p>
 
-  <div style="display:flex; gap:10px;">
-    <input id="pin-0" maxlength="1" class="pin-input" />
-    <input id="pin-1" maxlength="1" class="pin-input" />
-    <input id="pin-2" maxlength="1" class="pin-input" />
-    <input id="pin-3" maxlength="1" class="pin-input" />
-  </div>
+<select id="giver"></select>
+<button onclick="draw()">Dra namn</button>
 
-  <button id="pin-submit" disabled>Fortsätt</button>
-  <p id="pin-error" style="color:red;"></p>
-</div>
-
-<!-- BEKRÄFTA NAMN -->
-<div id="confirm-section">
-  <h2 id="confirm-text"></h2>
-  <button id="confirm-yes">Ja</button>
-  <button id="confirm-no">Nej</button>
-</div>
-
-<!-- HUVUDSIDA -->
-<div id="main-section">
-  <h2>🎁 Secret Santa</h2>
-  <p>Välj vem som ska dra:</p>
-
-  <select id="giver"></select>
-  <button onclick="draw()">Dra namn</button>
-
-  <p id="result"></p>
-</div>
+<p id="result"></p>
 
 <script>
-/* ---------------- PIN LOGIK ---------------- */
-
-const inputs = document.querySelectorAll(".pin-input");
-const submitBtn = document.getElementById("pin-submit");
-let currentUserName = null;
-
-// Autofokus + backspace + endast siffror
-inputs.forEach((input, index) => {
-  input.addEventListener("input", () => {
-    input.value = input.value.replace(/[^0-9]/g, "");
-
-    if (input.value && index < inputs.length - 1) {
-      inputs[index + 1].focus();
-    }
-
-    const pin = [...inputs].map(i => i.value).join("");
-    submitBtn.disabled = pin.length !== 4;
-  });
-
-  input.addEventListener("keydown", (e) => {
-    if (e.key === "Backspace" && !input.value && index > 0) {
-      inputs[index - 1].focus();
-    }
-  });
-});
-
-submitBtn.addEventListener("click", async () => {
-  const pin = [...inputs].map(i => i.value).join("");
-
-  const { data, error } = await supabase
-    .from("secret_santa_pins")
-    .select("name")
-    .eq("pin", pin)
-    .single();
-
-  if (error || !data) {
-    document.getElementById("pin-error").innerText = "Fel PIN-kod";
-    return;
-  }
-
-  currentUserName = data.name;
-
-  document.getElementById("pin-section").style.display = "none";
-  document.getElementById("confirm-section").style.display = "block";
-  document.getElementById("confirm-text").innerText = `Är du ${currentUserName}?`;
-});
-
-/* ---------------- BEKRÄFTA NAMN ---------------- */
-
-document.getElementById("confirm-yes").addEventListener("click", () => {
-  document.getElementById("confirm-section").style.display = "none";
-  document.getElementById("main-section").style.display = "block";
-});
-
-document.getElementById("confirm-no").addEventListener("click", () => {
-  location.reload();
-});
-
-/* ---------------- SUPABASE LOGIK ---------------- */
-
 const SUPABASE_URL = "https://qktwixlydcpjuvnbgxza.supabase.co";
-const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9…";
-
+const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9…"; // din key här
 const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
+// Lista på deltagare
 const PARTICIPANTS = [
   "Iren","Jonas","Joakim","Dunis","Juli","Sam","Klas","Martha",
   "Ia","Lita","Kennedy","Johannes","Rebecka","Betty","Bodil",
@@ -137,6 +37,7 @@ const PARTICIPANTS = [
 
 const groupId = "familj2025";
 
+// Skapa säker lottning
 function createAssignments(names) {
   let receivers;
   do {
@@ -150,6 +51,7 @@ function createAssignments(names) {
   return Object.fromEntries(names.map((n, i) => [n, receivers[i]]));
 }
 
+// Initiera grupp
 async function ensureGroup() {
   const { data } = await supabase
     .from("secret_santa_groups")
@@ -165,6 +67,7 @@ async function ensureGroup() {
   }
 }
 
+// Ladda givers som inte dragit ännu
 async function loadGivers() {
   const { data } = await supabase
     .from("secret_santa")
@@ -190,6 +93,7 @@ async function loadGivers() {
   }
 }
 
+// Dra namn
 async function draw() {
   const giver = document.getElementById("giver").value;
   if (!giver) return;
@@ -212,6 +116,7 @@ async function draw() {
   loadGivers();
 }
 
+// Start
 ensureGroup().then(loadGivers);
 </script>
 
