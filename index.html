@@ -27,20 +27,20 @@
       --rosa: rgba(255, 210, 220, 0.92);
       --rosa-dark: #d47a8c;
       --rosa-hover: #b85f72;
-      --result-color: #b30000;
+      --result-color: #0f7a0f; /* julgrön */
     }
 
     /* --- IDENTISK RUTA PÅ ALLA SIDOR --- */
     .page-box {
       background: var(--rosa);
-      width: min(95%, 680px);   /* bredare */
-      height: 68vh;             /* lägre */
-      padding: 30px 25px;       /* mindre space */
+      width: min(95%, 680px);
+      height: 62vh;             /* lägre */
+      padding: 28px 25px;       /* mindre rosa space */
       border-radius: 25px;
       box-shadow: 0 4px 14px rgba(0,0,0,0.2);
       backdrop-filter: blur(5px);
 
-      display: none; /* viktigt */
+      display: none;
 
       flex-direction: column;
       justify-content: flex-start;
@@ -56,18 +56,18 @@
       font-weight: 800;
       line-height: 1.15;
       white-space: pre-line;
-      margin-bottom: 15px;
+      margin-bottom: 12px;
     }
 
     .emoji-line {
       font-size: clamp(40px, 10vw, 60px);
-      margin-bottom: 20px;
+      margin-bottom: 18px;
     }
 
     .subtitle-large {
       font-size: clamp(34px, 9vw, 52px);
       font-weight: 600;
-      margin-bottom: 25px;
+      margin-bottom: 22px;
     }
 
     .normal-text {
@@ -85,7 +85,7 @@
       display: flex;
       justify-content: center;
       gap: 18px;
-      margin-bottom: 25px;
+      margin-bottom: 22px;
     }
 
     .pin-input {
@@ -134,7 +134,7 @@
       display: block;
     }
 
-    /* --- DRA NAMN-KNAPP (smalare) --- */
+    /* --- DRA NAMN-KNAPP --- */
     #draw-button {
       width: 55%;
       margin: 0 auto;
@@ -143,7 +143,7 @@
 
     /* --- RESULTAT MED PAUS + EFFEKT --- */
     #result {
-      margin-top: 25px;
+      margin-top: 20px;
       opacity: 0;
       transform: scale(0.8);
       transition: opacity 0.6s ease, transform 0.6s ease;
@@ -155,21 +155,19 @@
       transform: scale(1) !important;
     }
 
-    /* --- KONFETTI --- */
+    /* --- KONFETTI FRÅN NAMNET --- */
     .confetti {
       position: fixed;
-      width: 10px;
-      height: 10px;
-      background: red;
-      top: -10px;
-      animation: fall 1.5s linear forwards;
+      width: 12px;
+      height: 12px;
       border-radius: 2px;
       opacity: 0.9;
+      animation: fall 1.8s linear forwards;
     }
 
     @keyframes fall {
       to {
-        transform: translateY(100vh) rotate(360deg);
+        transform: translateY(100vh) rotate(720deg);
         opacity: 0;
       }
     }
@@ -184,7 +182,8 @@
     <div class="title-biggest">
 Välkommen till
 Familjen Åhlunds
-Superhäftiga secret santa-lotteri!
+superhäftiga 
+secret santa-lotteri!
     </div>
 
     <div class="emoji-line">🎁</div>
@@ -225,7 +224,7 @@ Superhäftiga secret santa-lotteri!
 
   <script>
     /* ---------------------------------------------------
-       HJÄLPFUNKTION: VISA EN SIDA
+       VISA EN SIDA
     --------------------------------------------------- */
     function showPage(id) {
       document.querySelectorAll(".page-box").forEach(box => box.style.display = "none");
@@ -234,15 +233,23 @@ Superhäftiga secret santa-lotteri!
     }
 
     /* ---------------------------------------------------
-       KONFETTI
+       KONFETTI FRÅN NAMNET
     --------------------------------------------------- */
-    function launchConfetti() {
-      for (let i = 0; i < 40; i++) {
+    function launchConfettiFromElement(el) {
+      const rect = el.getBoundingClientRect();
+      const originX = rect.left + rect.width / 2;
+      const originY = rect.top;
+
+      for (let i = 0; i < 60; i++) {
         const c = document.createElement("div");
         c.classList.add("confetti");
-        c.style.left = Math.random() * 100 + "vw";
+
+        c.style.left = originX + (Math.random() * 80 - 40) + "px";
+        c.style.top = originY + "px";
+
         c.style.background = ["#ff4d4d", "#ffcc00", "#66cc66"][Math.floor(Math.random() * 3)];
-        c.style.animationDuration = (1 + Math.random()) + "s";
+        c.style.animationDuration = (1.2 + Math.random()) + "s";
+
         document.body.appendChild(c);
         setTimeout(() => c.remove(), 2000);
       }
@@ -398,13 +405,14 @@ Superhäftiga secret santa-lotteri!
       resultEl.classList.remove("reveal");
       setTimeout(() => resultEl.classList.add("reveal"), 50);
 
-      /* Efter 600 ms: visa namnet + konfetti */
+      /* Efter 600 ms: visa namnet + konfetti från namnet */
       setTimeout(() => {
         resultEl.innerHTML =
           `<span class="subtitle-large">Du fick:</span>\n` +
-          `<span class="bigger-text" style="color: var(--result-color);">${receiver}</span>`;
+          `<span id="winner-name" class="bigger-text" style="color: var(--result-color);">${receiver}</span>`;
 
-        launchConfetti();
+        const nameEl = document.getElementById("winner-name");
+        launchConfettiFromElement(nameEl);
 
       }, 600);
     }
