@@ -9,53 +9,58 @@
     /* --- JULBAKGRUND --- */
     body {
       font-family: "Segoe UI", Arial, sans-serif;
-      padding: 20px;
       margin: 0;
+      padding: 0;
       background: url("https://images.unsplash.com/photo-1543589077-47d81606c1bf?auto=format&fit=crop&w=800&q=60")
                   no-repeat center/cover;
       min-height: 100vh;
-      position: relative;
       overflow-x: hidden;
     }
 
     /* --- SEKTIONER --- */
     #welcome-section, #confirm-section, #main-section {
-      background: rgba(255,255,255,0.9);
-      padding: 25px;
-      border-radius: 20px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-      backdrop-filter: blur(4px);
+      background: rgba(255,255,255,0.92);
+      width: 90%;
+      min-height: 90vh;
+      margin: 5vh auto;
+      padding: 40px 30px;
+      border-radius: 25px;
+      box-shadow: 0 4px 14px rgba(0,0,0,0.2);
+      backdrop-filter: blur(5px);
       display: none;
+      text-align: center;
     }
 
     /* --- STOR AUTOSKALANDE TEXT --- */
-    h1 {
-      font-size: clamp(32px, 10vw, 52px);
-      text-align: center;
-      line-height: 1.3;
+    .welcome-title {
+      font-size: clamp(36px, 11vw, 60px);
       font-weight: 700;
+      line-height: 1.25;
+      margin-bottom: 20px;
+      white-space: pre-line; /* gör radbrytning möjlig */
     }
 
-    h2 {
-      font-size: clamp(28px, 8vw, 44px);
-      text-align: center;
-      font-weight: 600;
+    .subtext {
+      font-size: clamp(26px, 8vw, 40px);
+      margin-bottom: 25px;
     }
 
-    p {
-      font-size: clamp(22px, 6vw, 32px);
-      text-align: center;
+    /* --- PIN-RUTOR --- */
+    .pin-wrapper {
+      display: flex;
+      justify-content: center;
+      gap: 15px;
+      margin-bottom: 25px;
     }
 
-    /* --- PIN-RUTOR MED NUMERIC KEYPAD --- */
     .pin-input {
       width: 70px;
       height: 80px;
-      font-size: clamp(30px, 8vw, 42px);
+      font-size: clamp(32px, 9vw, 48px);
       text-align: center;
-      border: 2px solid #ccc;
+      border: 2px solid #aaa;
       border-radius: 12px;
-      transition: border-color 0.2s, transform 0.1s;
+      background: white;
     }
 
     .pin-input:focus {
@@ -64,18 +69,29 @@
       transform: scale(1.05);
     }
 
-    /* --- KNAPPAR --- */
-    button {
-      width: 100%;
+    /* --- FORTSÄTT-KNAPP (lika bred som PIN-rutorna tillsammans) --- */
+    #pin-submit {
+      width: calc(70px * 4 + 15px * 3); /* 4 rutor + 3 mellanrum */
+      max-width: 100%;
+      margin: 0 auto;
+      display: block;
       padding: 18px;
-      font-size: clamp(24px, 7vw, 36px);
-      border: none;
-      border-radius: 12px;
+      font-size: clamp(26px, 8vw, 40px);
+      font-weight: 700;
       background: #b30000;
       color: white;
+      border: none;
+      border-radius: 12px;
+    }
+
+    #pin-submit:disabled {
+      background: #ccc;
+    }
+
+    /* --- KNAPPAR --- */
+    button {
       cursor: pointer;
-      transition: background 0.2s, transform 0.1s;
-      font-weight: 600;
+      transition: 0.2s;
     }
 
     button:hover:not(:disabled) {
@@ -83,16 +99,10 @@
       transform: scale(1.02);
     }
 
-    button:disabled {
-      background: #ccc;
-      cursor: not-allowed;
-    }
-
     /* --- RESULTATTEXT --- */
     #result {
       margin-top: 20px;
       font-size: clamp(28px, 8vw, 42px);
-      text-align: center;
       font-weight: bold;
       color: #006600;
       opacity: 0;
@@ -102,24 +112,6 @@
     .reveal {
       opacity: 1 !important;
     }
-
-    /* --- MOBILANPASSNING (85% av skärmen) --- */
-    @media (max-width: 600px) {
-
-      #welcome-section,
-      #confirm-section,
-      #main-section {
-        width: 85%;
-        min-height: 85vh;
-        margin: 7.5vh auto;
-        padding: 35px 25px;
-      }
-
-      .pin-input {
-        width: 65px;
-        height: 75px;
-      }
-    }
   </style>
 </head>
 
@@ -127,10 +119,17 @@
 
   <!-- STARTSKÄRM + PIN-INMATNING -->
   <div id="welcome-section">
-    <h1>🎁Välkommen till Familjen Åhlunds häftiga secret santa-lotteri!🎁</h1>
-    <p>skriv in din pinkod</p>
+    <div class="welcome-title">
+Välkommen till
+Familjen Åhlunds
+superhäftiga
+secret santa-lotteri!
+🎁
+    </div>
 
-    <div style="display:flex; gap:15px; margin-bottom:20px; justify-content:center;">
+    <div class="subtext">skriv in din pinkod</div>
+
+    <div class="pin-wrapper">
       <input id="pin-0" maxlength="1" class="pin-input" inputmode="numeric" type="tel" />
       <input id="pin-1" maxlength="1" class="pin-input" inputmode="numeric" type="tel" />
       <input id="pin-2" maxlength="1" class="pin-input" inputmode="numeric" type="tel" />
@@ -138,7 +137,7 @@
     </div>
 
     <button id="pin-submit" disabled>Fortsätt</button>
-    <p id="pin-error" style="color:red;"></p>
+    <p id="pin-error" style="color:red; font-size:22px;"></p>
   </div>
 
   <!-- BEKRÄFTA NAMN -->
@@ -153,7 +152,7 @@
     <h2>🎁 Secret Santa</h2>
 
     <p>Du är inloggad som:</p>
-    <p id="logged-in-name" style="font-weight:bold;"></p>
+    <p id="logged-in-name" style="font-weight:bold; font-size:32px;"></p>
 
     <button id="draw-button">Dra namn</button>
 
