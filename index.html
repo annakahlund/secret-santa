@@ -1,210 +1,64 @@
 <!DOCTYPE html>
 <html lang="sv">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Familjen Åhlunds Secret Santa 2025 🎅</title>
+<meta charset="UTF-8">
+<title>Test PIN</title>
 
-  <style>
-    body {
-      font-family: sans-serif;
-      background: #fff0f5;
-      padding: 20px;
-      max-width: 600px;
-      margin: auto;
-      text-align: center;
-    }
+<style>
+  body {
+    font-family: Arial, sans-serif;
+    padding: 20px;
+  }
 
-    h2 {
-      color: #d6336c;
-      font-size: 1.8rem;
-      margin-bottom: 10px;
-    }
-
-    p {
-      font-size: 1.1rem;
-    }
-
-    select, button {
-      width: 100%;
-      padding: 16px;
-      margin-top: 16px;
-      font-size: 1.1rem;
-      border-radius: 8px;
-    }
-
-    select {
-      border: 2px solid #d6336c;
-      background: white;
-    }
-
-    button {
-      background-color: #28a745;
-      color: white;
-      border: none;
-      font-weight: bold;
-    }
-
-    button:hover {
-      background-color: #218838;
-    }
-
-    #result {
-      margin-top: 24px;
-      font-size: 1.4rem;
-      font-weight: bold;
-      color: #d6336c;
-    }
-
-    #status {
-      margin-top: 10px;
-      color: #6c757d;
-      font-size: 0.9rem;
-    }
-
-    @media (max-width: 480px) {
-      h2 { font-size: 1.5rem; }
-      select, button { font-size: 1rem; padding: 14px; }
-      #result { font-size: 1.2rem; }
-    }
-  </style>
+  .pin-input {
+    width: 40px;
+    height: 50px;
+    font-size: 32px;
+    text-align: center;
+  }
+</style>
 </head>
 
 <body>
-  <h2>🎁 Familjen Åhlunds Secret Santa 2025 🎁</h2>
-  <p>Välj ditt eget namn:</p>
 
-  <select id="giver"></select>
-  <button id="drawBtn">Dra namn</button>
+<h2>Test av PIN</h2>
 
-  <p id="result"></p>
-  <p id="status"></p>
+<div id="pin-section">
+  <h3>Skriv in din PIN-kod</h3>
 
-  <!-- Supabase JS via UNPKG (mest kompatibelt) -->
-  <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+  <div style="display:flex; gap:10px;">
+    <input id="pin-0" maxlength="1" class="pin-input" />
+    <input id="pin-1" maxlength="1" class="pin-input" />
+    <input id="pin-2" maxlength="1" class="pin-input" />
+    <input id="pin-3" maxlength="1" class="pin-input" />
+  </div>
 
-  <!-- App-kod -->
-  <script>
-    const SUPABASE_URL = "https://qktwixlydcpjuvnbgxza.supabase.co";
-    const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFrdHdpeGx5ZGNwanV2bmJneHphIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjYwODE3NzgsImV4cCI6MjA4MTY1Nzc3OH0.9Z4yEXtsO6rXPutvzmymFeu-KvQA4_604pJfDt0XzQU";
+  <button id="pin-submit" disabled>Fortsätt</button>
+  <p id="pin-error" style="color:red;"></p>
+</div>
 
-    const PARTICIPANTS = [
-      "Iren","Jonas","Joakim","Dunis","Juli","Sam","Klas","Martha",
-      "Ia","Lita","Kennedy","Johannes","Rebecka","Betty","Bodil",
-      "Anna","Essi","Udo"
-    ];
-    const groupId = "familj2025";
+<script>
+  const inputs = document.querySelectorAll(".pin-input");
+  const submitBtn = document.getElementById("pin-submit");
 
-    const $giver = document.getElementById("giver");
-    // --- Unika länkar: lås användaren till sitt eget namn ---
-const urlParams = new URLSearchParams(window.location.search);
-const forcedGiver = urlParams.get("giver");
+  inputs.forEach((input, index) => {
+    input.addEventListener("input", () => {
+      input.value = input.value.replace(/[^0-9]/g, "");
 
-if (forcedGiver) {
-  // Sätt rätt namn direkt
-  fillDropdown([forcedGiver]);
-
-  // Visa status
-  setStatus(`Du drar åt: ${forcedGiver}`);
-
-  // Lås dropdownen
-  $giver.disabled = true;
-}
-    const $status = document.getElementById("status");
-    const $result = document.getElementById("result");
-    const $drawBtn = document.getElementById("drawBtn");
-
-    function setStatus(msg) { $status.textContent = msg; }
-
-    function fillDropdown(names) {
-      $giver.innerHTML = "";
-      if (!names.length) {
-        $giver.innerHTML = "<option>Alla har dragit 🎄</option>";
-        return;
-      }
-      names.forEach(name => {
-        const opt = document.createElement("option");
-        opt.value = name;
-        opt.textContent = name;
-        $giver.appendChild(opt);
-      });
-    }
-
-    fillDropdown(PARTICIPANTS);
-
-    async function init() {
-      if (typeof supabase === "undefined") {
-        setStatus("Kunde inte ladda Supabase-klienten.");
-        return;
+      if (input.value && index < 3) {
+        inputs[index + 1].focus();
       }
 
-      const db = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+      const pin = [...inputs].map(i => i.value).join("");
+      submitBtn.disabled = pin.length !== 4;
+    });
+  });
 
-      await ensureGroup(db);
-      await refreshRemaining(db);
+  submitBtn.addEventListener("click", () => {
+    const pin = [...inputs].map(i => i.value).join("");
+    alert("PIN är: " + pin);
+  });
+</script>
 
-      $drawBtn.onclick = () => draw(db);
-
-      setStatus("Klar.");
-    }
-
-    function createAssignments(names) {
-      let receivers;
-      do {
-        receivers = [...names];
-        for (let i = receivers.length - 1; i > 0; i--) {
-          const j = Math.floor(Math.random() * (i + 1));
-          [receivers[i], receivers[j]] = [receivers[j], receivers[i]];
-        }
-      } while (names.some((n, i) => n === receivers[i]));
-      return Object.fromEntries(names.map((n, i) => [n, receivers[i]]));
-    }
-
-    async function ensureGroup(db) {
-      const { data } = await db
-        .from("secret_santa_groups")
-        .select("group_id")
-        .eq("group_id", groupId)
-        .maybeSingle();
-
-      if (!data) {
-        const assignments = createAssignments(PARTICIPANTS);
-        await db.from("secret_santa_groups").insert({ group_id: groupId, assignments });
-      }
-    }
-
-    async function refreshRemaining(db) {
-      const { data } = await db
-        .from("secret_santa")
-        .select("giver")
-        .eq("group_id", groupId);
-
-      const used = data ? data.map(r => r.giver) : [];
-      const remaining = PARTICIPANTS.filter(n => !used.includes(n));
-
-      fillDropdown(remaining);
-    }
-
-    async function draw(db) {
-      const giver = $giver.value;
-      if (!giver) return;
-
-      const { data: group } = await db
-        .from("secret_santa_groups")
-        .select("assignments")
-        .eq("group_id", groupId)
-        .maybeSingle();
-
-      const receiver = group.assignments[giver];
-
-      await db.from("secret_santa").insert({ group_id: groupId, giver, receiver });
-
-      $result.textContent = `🎄 ${giver} fick: ${receiver}`;
-
-      await refreshRemaining(db);
-    }
-
-    init();
-  </script>
 </body>
 </html>
