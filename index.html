@@ -15,10 +15,11 @@
                   no-repeat center/cover;
       min-height: 100vh;
       overflow-x: hidden;
+
       display: flex;
       justify-content: center;
       align-items: flex-start;
-      padding-top: 4vh;
+      padding-top: 5vh; /* lika mycket luft på alla sidor */
     }
 
     /* --- FÄRGER --- */
@@ -29,17 +30,19 @@
     }
 
     /* --- IDENTISK RUTA PÅ ALLA SIDOR --- */
-    #welcome-section, #confirm-section, #main-section {
+    .page-box {
       background: var(--rosa);
       width: min(90%, 600px);
-      height: 80vh;                 
-      padding: 35px 25px;
+      height: 80vh; /* exakt samma höjd */
+      padding: 40px 30px;
       border-radius: 25px;
       box-shadow: 0 4px 14px rgba(0,0,0,0.2);
       backdrop-filter: blur(5px);
 
-      display: none; /* FIXEN — endast denna display! */
+      display: none; /* viktigt! */
 
+      /* layout inuti rutan */
+      display: none;
       flex-direction: column;
       justify-content: flex-start;
       align-items: center;
@@ -151,16 +154,13 @@
       transform: scale(1) !important;
     }
 
-    #confirm-text {
-      margin-top: 25px;
-    }
   </style>
 </head>
 
 <body>
 
   <!-- STARTSKÄRM -->
-  <div id="welcome-section">
+  <div id="welcome-section" class="page-box">
     <div class="title-biggest">
 Välkommen till
 Familjen Åhlunds
@@ -184,14 +184,14 @@ secret santa-lotteri!
   </div>
 
   <!-- BEKRÄFTA NAMN -->
-  <div id="confirm-section">
+  <div id="confirm-section" class="page-box">
     <div id="confirm-text" class="title-biggest"></div>
     <button id="confirm-yes">Ja</button>
     <button id="confirm-no" style="margin-top:20px;">Nej</button>
   </div>
 
   <!-- HUVUDSIDA -->
-  <div id="main-section">
+  <div id="main-section" class="page-box">
     <div class="title-biggest">Secret Santa</div>
 
     <div class="emoji-line">🎅</div>
@@ -213,12 +213,12 @@ secret santa-lotteri!
 
       if (savedUser) {
         currentUserName = savedUser;
-        document.getElementById("main-section").style.display = "block";
+        document.getElementById("main-section").style.display = "flex";
         document.getElementById("logged-in-name").innerText = savedUser;
         return;
       }
 
-      document.getElementById("welcome-section").style.display = "block";
+      document.getElementById("welcome-section").style.display = "flex";
 
       const inputs = document.querySelectorAll(".pin-input");
       const submitBtn = document.getElementById("pin-submit");
@@ -295,7 +295,7 @@ secret santa-lotteri!
       currentUserName = data.name;
 
       document.getElementById("welcome-section").style.display = "none";
-      document.getElementById("confirm-section").style.display = "block";
+      document.getElementById("confirm-section").style.display = "flex";
       document.getElementById("confirm-text").innerText = `Är du ${currentUserName}?`;
     });
 
@@ -306,7 +306,7 @@ secret santa-lotteri!
       sessionStorage.setItem("loggedInUser", currentUserName);
 
       document.getElementById("confirm-section").style.display = "none";
-      document.getElementById("main-section").style.display = "block";
+      document.getElementById("main-section").style.display = "flex";
       document.getElementById("logged-in-name").innerText = currentUserName;
     });
 
