@@ -17,7 +17,8 @@
       overflow-x: hidden;
       display: flex;
       justify-content: center;
-      align-items: center;
+      align-items: flex-start;
+      padding-top: 4vh;
     }
 
     /* --- FÄRGER --- */
@@ -27,37 +28,49 @@
       --rosa-hover: #b85f72;
     }
 
-    /* --- SEKTIONER (nu responsiva och autoanpassade) --- */
+    /* --- IDENTISK RUTA PÅ ALLA SIDOR --- */
     #welcome-section, #confirm-section, #main-section {
       background: var(--rosa);
       width: min(90%, 600px);
-      min-height: min(85vh, 800px);
-      padding: 40px 30px;
+      height: 80vh;                 /* samma höjd */
+      padding: 35px 25px;
       border-radius: 25px;
       box-shadow: 0 4px 14px rgba(0,0,0,0.2);
       backdrop-filter: blur(5px);
       display: none;
+
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-start;
+      align-items: center;
+
+      overflow-y: auto;             /* scrollar inuti rutan om det behövs */
       text-align: center;
     }
 
-    /* --- TEXTSTORLEKAR (konsekventa och större) --- */
+    /* --- TEXTSTORLEKAR --- */
     .title-biggest {
-      font-size: clamp(42px, 12vw, 72px);
+      font-size: clamp(44px, 12vw, 74px);
       font-weight: 800;
       line-height: 1.2;
       white-space: pre-line;
-      margin-bottom: 30px;
+      margin-bottom: 20px;
+    }
+
+    .emoji-line {
+      font-size: clamp(40px, 10vw, 60px);
+      margin-bottom: 25px;
     }
 
     .subtitle-large {
-      font-size: clamp(32px, 9vw, 52px);
+      font-size: clamp(34px, 9vw, 54px);
       font-weight: 600;
-      margin-bottom: 35px;
+      margin-bottom: 30px;
     }
 
     .normal-text {
       font-size: clamp(28px, 8vw, 44px);
-      margin-bottom: 25px;
+      margin-bottom: 20px;
     }
 
     /* --- PIN-RUTOR --- */
@@ -84,7 +97,7 @@
       transform: scale(1.05);
     }
 
-    /* --- KNAPPAR (konsekventa färger) --- */
+    /* --- KNAPPAR --- */
     button {
       padding: 18px;
       font-size: clamp(28px, 8vw, 44px);
@@ -126,7 +139,7 @@
       margin-top: 30px;
       font-size: clamp(34px, 10vw, 56px);
       font-weight: bold;
-      color: #006600;
+      color: black;
       opacity: 0;
       transform: scale(0.8);
       transition: opacity 0.6s ease, transform 0.6s ease;
@@ -140,7 +153,7 @@
 
     /* Extra space över “Är du X?” */
     #confirm-text {
-      margin-top: 20px;
+      margin-top: 25px;
     }
   </style>
 </head>
@@ -155,6 +168,8 @@ Familjen Åhlunds
 Superhäftiga
 secret santa-lotteri!
     </div>
+
+    <div class="emoji-line">🎁</div>
 
     <div class="subtitle-large">Skriv in din pinkod</div>
 
@@ -179,6 +194,8 @@ secret santa-lotteri!
   <!-- HUVUDSIDA -->
   <div id="main-section">
     <div class="title-biggest">Secret Santa</div>
+
+    <div class="emoji-line">🎅</div>
 
     <div class="subtitle-large">Du är inloggad som</div>
     <div id="logged-in-name" class="subtitle-large" style="font-weight:bold;"></div>
