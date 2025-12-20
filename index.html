@@ -19,11 +19,11 @@
   }
 
   #main-section {
-    display: none; /* göms tills PIN är godkänd */
+    display: none;
   }
 
   #confirm-section {
-    display: none; /* visas efter PIN */
+    display: none;
   }
 </style>
 </head>
@@ -52,7 +52,7 @@
   <button id="confirm-no">Nej</button>
 </div>
 
-<!-- HUVUDSIDA (låst tills PIN är godkänd) -->
+<!-- HUVUDSIDA -->
 <div id="main-section">
   <h2>🎁 Secret Santa</h2>
   <p>Välj vem som ska dra:</p>
@@ -70,23 +70,29 @@ const inputs = document.querySelectorAll(".pin-input");
 const submitBtn = document.getElementById("pin-submit");
 let currentUserName = null;
 
+// Autofokus + backspace + endast siffror
 inputs.forEach((input, index) => {
   input.addEventListener("input", () => {
     input.value = input.value.replace(/[^0-9]/g, "");
 
-    if (input.value && index < 3) {
+    if (input.value && index < inputs.length - 1) {
       inputs[index + 1].focus();
     }
 
     const pin = [...inputs].map(i => i.value).join("");
     submitBtn.disabled = pin.length !== 4;
   });
+
+  input.addEventListener("keydown", (e) => {
+    if (e.key === "Backspace" && !input.value && index > 0) {
+      inputs[index - 1].focus();
+    }
+  });
 });
 
 submitBtn.addEventListener("click", async () => {
   const pin = [...inputs].map(i => i.value).join("");
 
-  // Hämta namn från Supabase baserat på PIN
   const { data, error } = await supabase
     .from("secret_santa_pins")
     .select("name")
@@ -100,7 +106,6 @@ submitBtn.addEventListener("click", async () => {
 
   currentUserName = data.name;
 
-  // Visa bekräftelse
   document.getElementById("pin-section").style.display = "none";
   document.getElementById("confirm-section").style.display = "block";
   document.getElementById("confirm-text").innerText = `Är du ${currentUserName}?`;
@@ -114,16 +119,16 @@ document.getElementById("confirm-yes").addEventListener("click", () => {
 });
 
 document.getElementById("confirm-no").addEventListener("click", () => {
-  location.reload(); // börja om
+  location.reload();
 });
 
 /* ---------------- SUPABASE LOGIK ---------------- */
 
 const SUPABASE_URL = "https://qktwixlydcpjuvnbgxza.supabase.co";
-const SUPABASE_KEY = "DIN NYCKEL HÄR";
+const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9…";
+
 const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-// Lista på deltagare
 const PARTICIPANTS = [
   "Iren","Jonas","Joakim","Dunis","Juli","Sam","Klas","Martha",
   "Ia","Lita","Kennedy","Johannes","Rebecka","Betty","Bodil",
@@ -132,7 +137,6 @@ const PARTICIPANTS = [
 
 const groupId = "familj2025";
 
-// Skapa säker lottning
 function createAssignments(names) {
   let receivers;
   do {
@@ -146,7 +150,6 @@ function createAssignments(names) {
   return Object.fromEntries(names.map((n, i) => [n, receivers[i]]));
 }
 
-// Initiera grupp
 async function ensureGroup() {
   const { data } = await supabase
     .from("secret_santa_groups")
@@ -162,7 +165,6 @@ async function ensureGroup() {
   }
 }
 
-// Ladda givers som inte dragit ännu
 async function loadGivers() {
   const { data } = await supabase
     .from("secret_santa")
@@ -188,7 +190,6 @@ async function loadGivers() {
   }
 }
 
-// Dra namn
 async function draw() {
   const giver = document.getElementById("giver").value;
   if (!giver) return;
@@ -211,7 +212,6 @@ async function draw() {
   loadGivers();
 }
 
-// Start
 ensureGroup().then(loadGivers);
 </script>
 
