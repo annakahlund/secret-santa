@@ -19,7 +19,7 @@
       overflow-x: hidden;
     }
 
-    /* --- KORT / SEKTIONER --- */
+    /* --- SEKTIONER --- */
     #welcome-section, #confirm-section, #main-section {
       background: rgba(255,255,255,0.9);
       padding: 25px;
@@ -51,7 +51,7 @@
     .pin-input {
       width: 60px;
       height: 70px;
-      font-size: clamp(26px, 6vw, 36px);
+      font-size: clamp(26px, 7vw, 36px);
       text-align: center;
       border: 2px solid #ccc;
       border-radius: 12px;
@@ -90,7 +90,7 @@
     /* --- RESULTATTEXT --- */
     #result {
       margin-top: 20px;
-      font-size: clamp(20px, 5vw, 26px);
+      font-size: clamp(20px, 6vw, 28px);
       text-align: center;
       font-weight: bold;
       color: #006600;
@@ -102,19 +102,24 @@
       opacity: 1 !important;
     }
 
-    /* --- MOBILANPASSNING --- */
+    /* --- MOBILANPASSNING (85% av skärmen) --- */
     @media (max-width: 600px) {
+
       body {
-        padding: 10px;
+        padding: 0;
         margin: 0;
         max-width: 100%;
       }
 
-      #welcome-section, #confirm-section, #main-section {
-        width: 90%;
-        margin: 20px auto;
-        padding: 25px;
+      #welcome-section,
+      #confirm-section,
+      #main-section {
+        width: 85%;
+        min-height: 85vh;
+        margin: 7.5vh auto;
+        padding: 30px 20px;
         border-radius: 20px;
+        display: block;
       }
 
       .pin-input {
@@ -211,7 +216,7 @@
        SUPABASE-KONFIG
     --------------------------------------------------- */
     const SUPABASE_URL = "https://qktwixlydcpjuvnbgxza.supabase.co";
-    const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFrdHdpeGx5ZGNwanV2bmJneHphIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjYwODE3NzgsImV4cCI6MjA4MTY1Nzc3OH0.9Z4yEXtsO6rXPutvzmymFeu-KvQA4_604pXDt0XzQU";
+    const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFrdHdpeGx5ZGNwanV2bmJneHphIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjYwODE3NzgsImV4cCI6MjA4MTY1Nzc3OH0.9Z4yEXtsO6rXPutvzmymFeu-KvQA4_604pJfDt0XzQU";
 
     const supa = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
