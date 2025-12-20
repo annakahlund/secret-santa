@@ -6,22 +6,135 @@
   <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
 
   <style>
+    /* --- JULBAKGRUND --- */
     body {
-      font-family: Arial, sans-serif;
+      font-family: "Segoe UI", Arial, sans-serif;
       padding: 20px;
       max-width: 500px;
       margin: auto;
+      background: url("https://images.unsplash.com/photo-1543589077-47d81606c1bf?auto=format&fit=crop&w=800&q=60")
+                  no-repeat center/cover;
+      min-height: 100vh;
+      position: relative;
+      overflow-x: hidden;
     }
 
+    /* --- SNÖFALL --- */
+    body::before {
+      content: "";
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      pointer-events: none;
+      background-image: url("https://i.imgur.com/M6yQFQy.png");
+      animation: snow 12s linear infinite;
+      opacity: 0.7;
+    }
+
+    @keyframes snow {
+      0% { background-position: 0 -1000px; }
+      100% { background-position: 0 1000px; }
+    }
+
+    /* --- KORT / SEKTIONER --- */
+    #pin-section, #confirm-section, #main-section {
+      background: rgba(255,255,255,0.9);
+      padding: 25px;
+      border-radius: 15px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+      margin-top: 40px;
+      backdrop-filter: blur(4px);
+    }
+
+    /* --- PIN-RUTOR --- */
     .pin-input {
-      width: 50px;
-      height: 60px;
-      font-size: 32px;
+      width: 60px;
+      height: 70px;
+      font-size: 36px;
       text-align: center;
+      border: 2px solid #ccc;
+      border-radius: 12px;
+      transition: border-color 0.2s, transform 0.1s;
     }
 
-    #main-section, #confirm-section {
-      display: none;
+    .pin-input:focus {
+      border-color: #b30000;
+      outline: none;
+      transform: scale(1.05);
+    }
+
+    /* --- KNAPPAR --- */
+    button {
+      width: 100%;
+      padding: 14px;
+      font-size: 18px;
+      border: none;
+      border-radius: 12px;
+      background: #b30000;
+      color: white;
+      cursor: pointer;
+      transition: background 0.2s, transform 0.1s;
+    }
+
+    button:hover:not(:disabled) {
+      background: #8a0000;
+      transform: scale(1.02);
+    }
+
+    button:disabled {
+      background: #ccc;
+      cursor: not-allowed;
+    }
+
+    /* --- RESULTATTEXT --- */
+    #result {
+      margin-top: 20px;
+      font-size: 22px;
+      text-align: center;
+      font-weight: bold;
+      color: #006600;
+      opacity: 0;
+      transition: opacity 0.8s ease;
+    }
+
+    /* --- DRAGNINGSEFFEKT --- */
+    .reveal {
+      opacity: 1 !important;
+    }
+
+    /* --- MOBILANPASSNING --- */
+    @media (max-width: 600px) {
+      body {
+        padding: 10px;
+      }
+
+      #pin-section, #confirm-section, #main-section {
+        padding: 20px;
+        margin-top: 20px;
+      }
+
+      .pin-input {
+        width: 50px;
+        height: 60px;
+        font-size: 28px;
+      }
+
+      button {
+        padding: 16px;
+        font-size: 20px;
+      }
+
+      h2 {
+        font-size: 22px;
+      }
+
+      #logged-in-name {
+        font-size: 20px;
+      }
+
+      #result {
+        font-size: 20px;
+      }
     }
   </style>
 </head>
@@ -32,7 +145,7 @@
   <div id="pin-section">
     <h2>Skriv in din PIN-kod</h2>
 
-    <div style="display:flex; gap:10px; margin-bottom:15px;">
+    <div style="display:flex; gap:10px; margin-bottom:15px; justify-content:center;">
       <input id="pin-0" maxlength="1" class="pin-input" />
       <input id="pin-1" maxlength="1" class="pin-input" />
       <input id="pin-2" maxlength="1" class="pin-input" />
@@ -40,7 +153,7 @@
     </div>
 
     <button id="pin-submit" disabled>Fortsätt</button>
-    <p id="pin-error" style="color:red;"></p>
+    <p id="pin-error" style="color:red; text-align:center;"></p>
   </div>
 
   <!-- BEKRÄFTA NAMN -->
@@ -70,7 +183,6 @@
       const savedUser = sessionStorage.getItem("loggedInUser");
 
       if (savedUser) {
-        // Hoppa direkt till huvudsidan
         currentUserName = savedUser;
         document.getElementById("pin-section").style.display = "none";
         document.getElementById("main-section").style.display = "block";
@@ -216,8 +328,10 @@
         .from("secret_santa")
         .insert({ group_id: groupId, giver, receiver });
 
-      document.getElementById("result").innerText =
-        `🎄 ${giver} fick: ${receiver}`;
+      const resultEl = document.getElementById("result");
+      resultEl.innerText = `🎄 ${giver} fick: ${receiver}`;
+      resultEl.classList.remove("reveal");
+      setTimeout(() => resultEl.classList.add("reveal"), 50);
     }
 
     document.getElementById("draw-button").addEventListener("click", draw);
