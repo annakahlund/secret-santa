@@ -17,13 +17,20 @@
       overflow-x: hidden;
     }
 
-    /* --- SEKTIONER --- */
+    /* --- FÄRGER --- */
+    :root {
+      --rosa: rgba(255, 210, 220, 0.92);   /* varm mjuk rosa */
+      --rosa-dark: #d47a8c;               /* mörkare rosa */
+      --rosa-hover: #b85f72;              /* hover */
+    }
+
+    /* --- SEKTIONER (mindre men luftiga) --- */
     #welcome-section, #confirm-section, #main-section {
-      background: rgba(255,255,255,0.92);
-      width: 90%;
-      min-height: 90vh;
-      margin: 5vh auto;
-      padding: 40px 30px;
+      background: var(--rosa);
+      width: 80%;
+      min-height: 75vh;
+      margin: 12vh auto;
+      padding: 35px 25px;
       border-radius: 25px;
       box-shadow: 0 4px 14px rgba(0,0,0,0.2);
       backdrop-filter: blur(5px);
@@ -31,32 +38,38 @@
       text-align: center;
     }
 
-    /* --- STOR AUTOSKALANDE TEXT --- */
-    .welcome-title {
-      font-size: clamp(36px, 11vw, 60px);
+    /* --- TEXTSTORLEK (matchar överallt) --- */
+    .title {
+      font-size: clamp(40px, 12vw, 70px);
       font-weight: 700;
       line-height: 1.25;
-      margin-bottom: 20px;
-      white-space: pre-line; /* gör radbrytning möjlig */
+      white-space: pre-line;
+      margin-bottom: 25px;
     }
 
-    .subtext {
+    .subtitle {
+      font-size: clamp(30px, 9vw, 48px);
+      font-weight: 600;
+      margin-bottom: 30px;
+    }
+
+    .normal-text {
       font-size: clamp(26px, 8vw, 40px);
-      margin-bottom: 25px;
+      margin-bottom: 20px;
     }
 
     /* --- PIN-RUTOR --- */
     .pin-wrapper {
       display: flex;
       justify-content: center;
-      gap: 15px;
-      margin-bottom: 25px;
+      gap: 18px;
+      margin-bottom: 30px;
     }
 
     .pin-input {
-      width: 70px;
-      height: 80px;
-      font-size: clamp(32px, 9vw, 48px);
+      width: 75px;
+      height: 90px;
+      font-size: clamp(36px, 10vw, 52px);
       text-align: center;
       border: 2px solid #aaa;
       border-radius: 12px;
@@ -64,45 +77,46 @@
     }
 
     .pin-input:focus {
-      border-color: #b30000;
+      border-color: var(--rosa-dark);
       outline: none;
       transform: scale(1.05);
     }
 
-    /* --- FORTSÄTT-KNAPP (lika bred som PIN-rutorna tillsammans) --- */
-    #pin-submit {
-      width: calc(70px * 4 + 15px * 3); /* 4 rutor + 3 mellanrum */
-      max-width: 100%;
-      margin: 0 auto;
-      display: block;
-      padding: 18px;
-      font-size: clamp(26px, 8vw, 40px);
+    /* --- KNAPPAR (matchar överallt) --- */
+    button {
+      width: 100%;
+      padding: 20px;
+      font-size: clamp(30px, 9vw, 50px);
       font-weight: 700;
-      background: #b30000;
+      background: var(--rosa-dark);
       color: white;
       border: none;
-      border-radius: 12px;
-    }
-
-    #pin-submit:disabled {
-      background: #ccc;
-    }
-
-    /* --- KNAPPAR --- */
-    button {
+      border-radius: 14px;
       cursor: pointer;
       transition: 0.2s;
     }
 
     button:hover:not(:disabled) {
-      background: #8a0000;
+      background: var(--rosa-hover);
       transform: scale(1.02);
     }
 
-    /* --- RESULTATTEXT --- */
+    button:disabled {
+      background: #e3b6c0;
+    }
+
+    /* --- FORTSÄTT-KNAPP (lika bred som PIN-rutorna) --- */
+    #pin-submit {
+      width: calc(75px * 4 + 18px * 3);
+      max-width: 100%;
+      margin: 0 auto;
+      display: block;
+    }
+
+    /* --- RESULTAT --- */
     #result {
       margin-top: 20px;
-      font-size: clamp(28px, 8vw, 42px);
+      font-size: clamp(32px, 10vw, 50px);
       font-weight: bold;
       color: #006600;
       opacity: 0;
@@ -117,9 +131,9 @@
 
 <body>
 
-  <!-- STARTSKÄRM + PIN-INMATNING -->
+  <!-- STARTSKÄRM -->
   <div id="welcome-section">
-    <div class="welcome-title">
+    <div class="title">
 Välkommen till
 Familjen Åhlunds
 superhäftiga
@@ -127,7 +141,7 @@ secret santa-lotteri!
 🎁
     </div>
 
-    <div class="subtext">skriv in din pinkod</div>
+    <div class="subtitle">skriv in din pinkod</div>
 
     <div class="pin-wrapper">
       <input id="pin-0" maxlength="1" class="pin-input" inputmode="numeric" type="tel" />
@@ -137,22 +151,22 @@ secret santa-lotteri!
     </div>
 
     <button id="pin-submit" disabled>Fortsätt</button>
-    <p id="pin-error" style="color:red; font-size:22px;"></p>
+    <p id="pin-error" class="normal-text" style="color:red;"></p>
   </div>
 
   <!-- BEKRÄFTA NAMN -->
   <div id="confirm-section">
-    <h2 id="confirm-text"></h2>
+    <div id="confirm-text" class="title"></div>
     <button id="confirm-yes">Ja</button>
-    <button id="confirm-no">Nej</button>
+    <button id="confirm-no" style="margin-top:20px;">Nej</button>
   </div>
 
   <!-- HUVUDSIDA -->
   <div id="main-section">
-    <h2>🎁 Secret Santa</h2>
+    <div class="title">🎁 Secret Santa</div>
 
-    <p>Du är inloggad som:</p>
-    <p id="logged-in-name" style="font-weight:bold; font-size:32px;"></p>
+    <div class="normal-text">Du är inloggad som:</div>
+    <div id="logged-in-name" class="subtitle" style="font-weight:bold;"></div>
 
     <button id="draw-button">Dra namn</button>
 
