@@ -63,7 +63,7 @@
 
   <script>
     /* ---------------------------------------------------
-       PIN-AUTOHOPP + AUTO-FORTSÄTT
+       PIN-AUTOHOPP + AUTO-FOKUS PÅ KNAPP
     --------------------------------------------------- */
     document.addEventListener("DOMContentLoaded", () => {
       const inputs = document.querySelectorAll(".pin-input");
@@ -85,9 +85,9 @@
           // Aktivera/avaktivera knappen
           submitBtn.disabled = pin.length !== 4;
 
-          // Om vi har 4 siffror: klicka automatiskt på knappen
+          // 🔥 NYTT: Flytta fokus till knappen när PIN är komplett
           if (pin.length === 4) {
-            submitBtn.click();
+            submitBtn.focus();
           }
         });
 
@@ -124,7 +124,6 @@
         .map(i => i.value)
         .join("");
 
-      // Om det inte är 4 siffror, gör inget
       if (pin.length !== 4) return;
 
       const { data, error } = await supa
@@ -136,7 +135,6 @@
       if (error || !data) {
         document.getElementById("pin-error").innerText = "Fel PIN-kod";
 
-        // Rensa rutorna och gå tillbaka till första rutan
         const inputs = document.querySelectorAll(".pin-input");
         inputs.forEach(i => i.value = "");
         inputs[0].focus();
@@ -247,3 +245,4 @@
   </script>
 
 </body>
+</html>
