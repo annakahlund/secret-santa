@@ -63,29 +63,32 @@
 
   <script>
     /* ---------------------------------------------------
-       PIN-AUTOHOPP + AUTO-FOKUS PÅ KNAPP
+       PIN-AUTOHOPP + AUTO-FOKUS PÅ KNAPP + AUTO-FOKUS FÖRSTA RUTAN
     --------------------------------------------------- */
     document.addEventListener("DOMContentLoaded", () => {
       const inputs = document.querySelectorAll(".pin-input");
       const submitBtn = document.getElementById("pin-submit");
+
+      // 🔥 Markören hamnar automatiskt i första rutan
+      inputs[0].focus();
 
       inputs.forEach((input, index) => {
         input.addEventListener("input", () => {
           // Tillåt bara siffror
           input.value = input.value.replace(/[^0-9]/g, "");
 
-          // Hoppa till nästa ruta när man skrivit en siffra
+          // Hoppa till nästa ruta
           if (input.value.length === 1 && index < inputs.length - 1) {
             inputs[index + 1].focus();
           }
 
-          // Bygg ihop PIN-strängen
+          // Bygg PIN-strängen
           const pin = [...inputs].map(i => i.value).join("");
 
-          // Aktivera/avaktivera knappen
+          // Aktivera knappen
           submitBtn.disabled = pin.length !== 4;
 
-          // 🔥 NYTT: Flytta fokus till knappen när PIN är komplett
+          // 🔥 Flytta fokus till knappen när PIN är komplett (INGET AUTOKLICK)
           if (pin.length === 4) {
             submitBtn.focus();
           }
