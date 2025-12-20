@@ -77,8 +77,12 @@
             inputs[index + 1].focus();
           }
 
-          const pin = [...inputs].map(i => i.value).join("");
-          submitBtn.disabled = pin.length !== 4;
+submitBtn.disabled = pin.length !== 4;
+
+// 🔥 NYTT: klicka automatiskt när PIN är komplett
+if (pin.length === 4) {
+  submitBtn.click();
+}
         });
 
         input.addEventListener("keydown", (e) => {
