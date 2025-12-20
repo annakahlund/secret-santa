@@ -62,34 +62,57 @@
 </div>
 
 <script>
-/* ---------------- PIN LOGIK ---------------- */
+/* ---------------------------------------------------
+   PIN-AUTOHOPP + AKTIVERING AV FORTSÄTT-KNAPPEN
+--------------------------------------------------- */
+document.addEventListener("DOMContentLoaded", () => {
+  const inputs = document.querySelectorAll(".pin-input");
 
-const inputs = document.querySelectorAll(".pin-input");
-const submitBtn = document.getElementById("pin-submit");
-let currentUserName = null;
+  inputs.forEach((input, index) => {
+    input.addEventListener("input", () => {
+      input.value = input.value.replace(/[^0-9]/g, "");
 
-// Autofokus + backspace + endast siffror
-inputs.forEach((input, index) => {
-  input.addEventListener("input", () => {
-    input.value = input.value.replace(/[^0-9]/g, "");
+      // Hoppa framåt när man skriver en siffra
+      if (input.value.length === 1 && index < inputs.length - 1) {
+        inputs[index + 1].focus();
+      }
 
-    if (input.value && index < inputs.length - 1) {
-      inputs[index + 1].focus();
-    }
+      // Aktivera knappen när alla är ifyllda
+      const pin = [...inputs].map(i => i.value).join("");
+      document.getElementById("pin-submit").disabled = pin.length !== 4;
+    });
 
-    const pin = [...inputs].map(i => i.value).join("");
-    submitBtn.disabled = pin.length !== 4;
-  });
-
-  input.addEventListener("keydown", (e) => {
-    if (e.key === "Backspace" && !input.value && index > 0) {
-      inputs[index - 1].focus();
-    }
+    input.addEventListener("keydown", (e) => {
+      if (e.key === "Backspace" && !input.value && index > 0) {
+        inputs[index - 1].focus();
+      }
+    });
   });
 });
 
-submitBtn.addEventListener("click", async () => {
-  const pin = [...inputs].map(i => i.value).join("");
+/* ---------------------------------------------------
+   SUPABASE-KONFIGURATION
+--------------------------------------------------- */
+const SUPABASE_URL = "https://qktwixlydcpjuvnbgxza.supabase.co";
+const SUPABASE_KEY = "YOUR_ANON_KEY_HERE";  /* <-- klistra in din riktiga anon key här */
+
+const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+/* ---------------------------------------------------
+   SECRET SANTA LOGIK
+--------------------------------------------------- */
+
+const PARTICIPANTS = [
+  "Iren","Jonas","Joakim","Dunis","Juli","Sam","Klas","Martha",
+  "Ia","Lita","Kennedy","Johannes","Rebecka","Betty","Bodil",
+  "Anna","Essi","Udo"
+];
+
+const groupId = "familj2025";
+
+/* PIN-KONTROLL */
+document.getElementById("pin-submit").addEventListener("click", async () => {
+  const pin = [...document.querySelectorAll(".pin-input")].map(i => i.value).join("");
 
   const { data, error } = await supabase
     .from("secret_santa_pins")
@@ -109,8 +132,7 @@ submitBtn.addEventListener("click", async () => {
   document.getElementById("confirm-text").innerText = `Är du ${currentUserName}?`;
 });
 
-/* ---------------- BEKRÄFTA NAMN ---------------- */
-
+/* BEKRÄFTA NAMN */
 document.getElementById("confirm-yes").addEventListener("click", () => {
   document.getElementById("confirm-section").style.display = "none";
   document.getElementById("main-section").style.display = "block";
@@ -120,21 +142,7 @@ document.getElementById("confirm-no").addEventListener("click", () => {
   location.reload();
 });
 
-/* ---------------- SUPABASE LOGIK ---------------- */
-
-const SUPABASE_URL = "https://qktwixlydcpjuvnbgxza.supabase.co";
-const SUPABASE_KEY = "YOUR_ANON_KEY_HERE";  /* <-- lägg in din riktiga anon key här */
-
-const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-
-const PARTICIPANTS = [
-  "Iren","Jonas","Joakim","Dunis","Juli","Sam","Klas","Martha",
-  "Ia","Lita","Kennedy","Johannes","Rebecka","Betty","Bodil",
-  "Anna","Essi","Udo"
-];
-
-const groupId = "familj2025";
-
+/* SKAPA LOTTNING */
 function createAssignments(names) {
   let receivers;
   do {
@@ -148,6 +156,7 @@ function createAssignments(names) {
   return Object.fromEntries(names.map((n, i) => [n, receivers[i]]));
 }
 
+/* SE TILL ATT GRUPP FINNS */
 async function ensureGroup() {
   const { data } = await supabase
     .from("secret_santa_groups")
@@ -163,6 +172,7 @@ async function ensureGroup() {
   }
 }
 
+/* LADDA GIVARE */
 async function loadGivers() {
   const { data } = await supabase
     .from("secret_santa")
@@ -188,6 +198,7 @@ async function loadGivers() {
   }
 }
 
+/* DRA NAMN */
 async function draw() {
   const giver = document.getElementById("giver").value;
   if (!giver) return;
@@ -210,6 +221,9 @@ async function draw() {
   loadGivers();
 }
 
+/* STARTA */
 ensureGroup().then(loadGivers);
 </script>
 
+</body>
+</html>
