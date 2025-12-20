@@ -32,19 +32,19 @@
     #welcome-section, #confirm-section, #main-section {
       background: var(--rosa);
       width: min(90%, 600px);
-      height: 80vh;                 /* samma höjd */
+      height: 80vh;                 
       padding: 35px 25px;
       border-radius: 25px;
       box-shadow: 0 4px 14px rgba(0,0,0,0.2);
       backdrop-filter: blur(5px);
-      display: none;
 
-      display: flex;
+      display: none; /* FIXEN — endast denna display! */
+
       flex-direction: column;
       justify-content: flex-start;
       align-items: center;
 
-      overflow-y: auto;             /* scrollar inuti rutan om det behövs */
+      overflow-y: auto;
       text-align: center;
     }
 
@@ -119,7 +119,7 @@
       background: #e3b6c0;
     }
 
-    /* --- FORTSÄTT-KNAPP (lika bred som PIN-rutorna) --- */
+    /* --- FORTSÄTT-KNAPP --- */
     #pin-submit {
       width: calc(75px * 4 + 18px * 3);
       max-width: 100%;
@@ -151,7 +151,6 @@
       transform: scale(1) !important;
     }
 
-    /* Extra space över “Är du X?” */
     #confirm-text {
       margin-top: 25px;
     }
