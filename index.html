@@ -53,9 +53,10 @@
   <!-- HUVUDSIDA -->
   <div id="main-section">
     <h2>🎁 Secret Santa</h2>
-    <p>Välj vem som ska dra:</p>
 
-    <select id="giver"></select>
+    <p>Du är inloggad som:</p>
+    <p id="logged-in-name" style="font-weight:bold;"></p>
+
     <button id="draw-button">Dra namn</button>
 
     <p id="result"></p>
@@ -63,32 +64,36 @@
 
   <script>
     /* ---------------------------------------------------
-       PIN-AUTOHOPP + AUTO-FOKUS PÅ KNAPP + AUTO-FOKUS FÖRSTA RUTAN
+       AUTO-FOKUS + PIN-HANTERING
     --------------------------------------------------- */
     document.addEventListener("DOMContentLoaded", () => {
+      const savedUser = sessionStorage.getItem("loggedInUser");
+
+      if (savedUser) {
+        // Hoppa direkt till huvudsidan
+        currentUserName = savedUser;
+        document.getElementById("pin-section").style.display = "none";
+        document.getElementById("main-section").style.display = "block";
+        document.getElementById("logged-in-name").innerText = savedUser;
+        return;
+      }
+
       const inputs = document.querySelectorAll(".pin-input");
       const submitBtn = document.getElementById("pin-submit");
 
-      // Markören hamnar automatiskt i första rutan
       inputs[0].focus();
 
       inputs.forEach((input, index) => {
         input.addEventListener("input", () => {
-          // Tillåt bara siffror
           input.value = input.value.replace(/[^0-9]/g, "");
 
-          // Hoppa till nästa ruta
           if (input.value.length === 1 && index < inputs.length - 1) {
             inputs[index + 1].focus();
           }
 
-          // Bygg PIN-strängen
           const pin = [...inputs].map(i => i.value).join("");
-
-          // Aktivera knappen
           submitBtn.disabled = pin.length !== 4;
 
-          // Flytta fokus till knappen när PIN är komplett (men klicka inte)
           if (pin.length === 4) {
             submitBtn.focus();
           }
@@ -128,25 +133,13 @@
         .join("")
         .trim();
 
-      console.log("Inmatad PIN:", JSON.stringify(pin));
+      if (pin.length !== 4) return;
 
-      if (pin.length !== 4) {
-        console.log("PIN inte 4 tecken, avbryter.");
-        return;
-      }
-
-      const { data, error } = await supa
+      const { data } = await supa
         .from("secret_santa_pins")
-        .select("name, pin")
+        .select("name")
         .eq("pin", pin)
         .maybeSingle();
-
-      console.log("Supabase-svar data:", data, "error:", error);
-
-      if (error) {
-        document.getElementById("pin-error").innerText = "Tekniskt fel vid kontroll av PIN.";
-        return;
-      }
 
       if (!data) {
         document.getElementById("pin-error").innerText = "Fel PIN-kod";
@@ -154,7 +147,6 @@
         const inputs = document.querySelectorAll(".pin-input");
         inputs.forEach(i => i.value = "");
         inputs[0].focus();
-
         return;
       }
 
@@ -166,11 +158,15 @@
     });
 
     document.getElementById("confirm-yes").addEventListener("click", () => {
+      sessionStorage.setItem("loggedInUser", currentUserName);
+
       document.getElementById("confirm-section").style.display = "none";
       document.getElementById("main-section").style.display = "block";
+      document.getElementById("logged-in-name").innerText = currentUserName;
     });
 
     document.getElementById("confirm-no").addEventListener("click", () => {
+      sessionStorage.clear();
       location.reload();
     });
 
@@ -205,37 +201,8 @@
       }
     }
 
-    async function loadGivers() {
-      const { data } = await supa
-        .from("secret_santa")
-        .select("giver")
-        .eq("group_id", groupId);
-
-      const used = (data || []).map(x => x.giver);
-      const select = document.getElementById("giver");
-
-      select.innerHTML = "";
-
-      PARTICIPANTS
-        .filter(name => !used.includes(name))
-        .forEach(name => {
-          const option = document.createElement("option");
-          option.value = name;
-          option.textContent = name;
-          select.appendChild(option);
-        });
-
-      if (!select.children.length) {
-        const option = document.createElement("option");
-        option.textContent = "Alla har dragit 🎄";
-        option.disabled = true;
-        select.appendChild(option);
-      }
-    }
-
     async function draw() {
-      const giver = document.getElementById("giver").value;
-      if (!giver) return;
+      const giver = currentUserName;
 
       const { data: group } = await supa
         .from("secret_santa_groups")
@@ -251,13 +218,11 @@
 
       document.getElementById("result").innerText =
         `🎄 ${giver} fick: ${receiver}`;
-
-      loadGivers();
     }
 
     document.getElementById("draw-button").addEventListener("click", draw);
 
-    ensureGroup().then(loadGivers);
+    ensureGroup();
   </script>
 
 </body>
