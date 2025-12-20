@@ -19,7 +19,7 @@
       display: flex;
       justify-content: center;
       align-items: flex-start;
-      padding-top: 5vh; /* lika mycket luft på alla sidor */
+      padding-top: 5vh;
     }
 
     /* --- FÄRGER --- */
@@ -27,22 +27,21 @@
       --rosa: rgba(255, 210, 220, 0.92);
       --rosa-dark: #d47a8c;
       --rosa-hover: #b85f72;
+      --result-color: #b30000; /* röd ton för namnet man får */
     }
 
     /* --- IDENTISK RUTA PÅ ALLA SIDOR --- */
     .page-box {
       background: var(--rosa);
-      width: min(90%, 600px);
-      height: 80vh; /* exakt samma höjd */
+      width: min(95%, 650px);   /* lite bredare */
+      height: 70vh;             /* lite lägre */
       padding: 40px 30px;
       border-radius: 25px;
       box-shadow: 0 4px 14px rgba(0,0,0,0.2);
       backdrop-filter: blur(5px);
 
-      display: none; /* viktigt! */
+      display: none; /* viktigt */
 
-      /* layout inuti rutan */
-      display: none;
       flex-direction: column;
       justify-content: flex-start;
       align-items: center;
@@ -74,6 +73,11 @@
     .normal-text {
       font-size: clamp(28px, 8vw, 44px);
       margin-bottom: 20px;
+    }
+
+    .bigger-text {
+      font-size: clamp(38px, 11vw, 60px);
+      font-weight: 700;
     }
 
     /* --- PIN-RUTOR --- */
@@ -132,7 +136,7 @@
 
     /* --- DRA NAMN-KNAPP (smalare) --- */
     #draw-button {
-      width: 70%;
+      width: 60%;
       margin: 0 auto;
       display: block;
     }
@@ -140,9 +144,6 @@
     /* --- RESULTAT MED COOL EFFEKT --- */
     #result {
       margin-top: 30px;
-      font-size: clamp(34px, 10vw, 56px);
-      font-weight: bold;
-      color: black;
       opacity: 0;
       transform: scale(0.8);
       transition: opacity 0.6s ease, transform 0.6s ease;
@@ -197,7 +198,7 @@ secret santa-lotteri!
     <div class="emoji-line">🎅</div>
 
     <div class="subtitle-large">Du är inloggad som</div>
-    <div id="logged-in-name" class="subtitle-large" style="font-weight:bold;"></div>
+    <div id="logged-in-name" class="bigger-text" style="font-weight:bold;"></div>
 
     <button id="draw-button">Dra namn</button>
 
@@ -215,10 +216,12 @@ secret santa-lotteri!
         currentUserName = savedUser;
         document.getElementById("main-section").style.display = "flex";
         document.getElementById("logged-in-name").innerText = savedUser;
+        window.scrollTo(0, 0);
         return;
       }
 
       document.getElementById("welcome-section").style.display = "flex";
+      window.scrollTo(0, 0);
 
       const inputs = document.querySelectorAll(".pin-input");
       const submitBtn = document.getElementById("pin-submit");
@@ -297,6 +300,8 @@ secret santa-lotteri!
       document.getElementById("welcome-section").style.display = "none";
       document.getElementById("confirm-section").style.display = "flex";
       document.getElementById("confirm-text").innerText = `Är du ${currentUserName}?`;
+
+      window.scrollTo(0, 0);
     });
 
     /* ---------------------------------------------------
@@ -308,6 +313,8 @@ secret santa-lotteri!
       document.getElementById("confirm-section").style.display = "none";
       document.getElementById("main-section").style.display = "flex";
       document.getElementById("logged-in-name").innerText = currentUserName;
+
+      window.scrollTo(0, 0);
     });
 
     document.getElementById("confirm-no").addEventListener("click", () => {
@@ -362,9 +369,15 @@ secret santa-lotteri!
         .insert({ group_id: groupId, giver, receiver });
 
       const resultEl = document.getElementById("result");
-      resultEl.innerText = `Du fick:\n${receiver}`;
+
+      resultEl.innerHTML =
+        `<span class="subtitle-large">Du fick:</span>\n` +
+        `<span class="bigger-text" style="color: var(--result-color);">${receiver}</span>`;
+
       resultEl.classList.remove("reveal");
       setTimeout(() => resultEl.classList.add("reveal"), 50);
+
+      window.scrollTo(0, 0);
     }
 
     document.getElementById("draw-button").addEventListener("click", draw);
