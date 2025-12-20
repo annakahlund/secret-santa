@@ -19,7 +19,7 @@
       display: flex;
       justify-content: center;
       align-items: flex-start;
-      padding-top: 5vh;
+      padding-top: 4vh;
     }
 
     /* --- FÄRGER --- */
@@ -27,15 +27,15 @@
       --rosa: rgba(255, 210, 220, 0.92);
       --rosa-dark: #d47a8c;
       --rosa-hover: #b85f72;
-      --result-color: #b30000; /* röd ton för namnet man får */
+      --result-color: #b30000;
     }
 
     /* --- IDENTISK RUTA PÅ ALLA SIDOR --- */
     .page-box {
       background: var(--rosa);
-      width: min(95%, 650px);   /* lite bredare */
-      height: 70vh;             /* lite lägre */
-      padding: 40px 30px;
+      width: min(95%, 680px);   /* bredare */
+      height: 68vh;             /* lägre */
+      padding: 30px 25px;       /* mindre space */
       border-radius: 25px;
       box-shadow: 0 4px 14px rgba(0,0,0,0.2);
       backdrop-filter: blur(5px);
@@ -52,31 +52,31 @@
 
     /* --- TEXTSTORLEKAR --- */
     .title-biggest {
-      font-size: clamp(44px, 12vw, 74px);
+      font-size: clamp(44px, 11vw, 70px);
       font-weight: 800;
-      line-height: 1.2;
+      line-height: 1.15;
       white-space: pre-line;
-      margin-bottom: 20px;
+      margin-bottom: 15px;
     }
 
     .emoji-line {
       font-size: clamp(40px, 10vw, 60px);
-      margin-bottom: 25px;
-    }
-
-    .subtitle-large {
-      font-size: clamp(34px, 9vw, 54px);
-      font-weight: 600;
-      margin-bottom: 30px;
-    }
-
-    .normal-text {
-      font-size: clamp(28px, 8vw, 44px);
       margin-bottom: 20px;
     }
 
+    .subtitle-large {
+      font-size: clamp(34px, 9vw, 52px);
+      font-weight: 600;
+      margin-bottom: 25px;
+    }
+
+    .normal-text {
+      font-size: clamp(28px, 8vw, 42px);
+      margin-bottom: 15px;
+    }
+
     .bigger-text {
-      font-size: clamp(38px, 11vw, 60px);
+      font-size: clamp(40px, 11vw, 62px);
       font-weight: 700;
     }
 
@@ -85,7 +85,7 @@
       display: flex;
       justify-content: center;
       gap: 18px;
-      margin-bottom: 30px;
+      margin-bottom: 25px;
     }
 
     .pin-input {
@@ -106,8 +106,8 @@
 
     /* --- KNAPPAR --- */
     button {
-      padding: 18px;
-      font-size: clamp(28px, 8vw, 44px);
+      padding: 16px;
+      font-size: clamp(28px, 8vw, 42px);
       font-weight: 700;
       background: var(--rosa-dark);
       color: white;
@@ -136,14 +136,14 @@
 
     /* --- DRA NAMN-KNAPP (smalare) --- */
     #draw-button {
-      width: 60%;
+      width: 55%;
       margin: 0 auto;
       display: block;
     }
 
-    /* --- RESULTAT MED COOL EFFEKT --- */
+    /* --- RESULTAT MED PAUS + EFFEKT --- */
     #result {
-      margin-top: 30px;
+      margin-top: 25px;
       opacity: 0;
       transform: scale(0.8);
       transition: opacity 0.6s ease, transform 0.6s ease;
@@ -153,6 +153,25 @@
     .reveal {
       opacity: 1 !important;
       transform: scale(1) !important;
+    }
+
+    /* --- KONFETTI --- */
+    .confetti {
+      position: fixed;
+      width: 10px;
+      height: 10px;
+      background: red;
+      top: -10px;
+      animation: fall 1.5s linear forwards;
+      border-radius: 2px;
+      opacity: 0.9;
+    }
+
+    @keyframes fall {
+      to {
+        transform: translateY(100vh) rotate(360deg);
+        opacity: 0;
+      }
     }
 
   </style>
@@ -165,8 +184,7 @@
     <div class="title-biggest">
 Välkommen till
 Familjen Åhlunds
-Superhäftiga
-secret santa-lotteri!
+Superhäftiga secret santa-lotteri!
     </div>
 
     <div class="emoji-line">🎁</div>
@@ -207,6 +225,30 @@ secret santa-lotteri!
 
   <script>
     /* ---------------------------------------------------
+       HJÄLPFUNKTION: VISA EN SIDA
+    --------------------------------------------------- */
+    function showPage(id) {
+      document.querySelectorAll(".page-box").forEach(box => box.style.display = "none");
+      document.getElementById(id).style.display = "flex";
+      window.scrollTo(0, 0);
+    }
+
+    /* ---------------------------------------------------
+       KONFETTI
+    --------------------------------------------------- */
+    function launchConfetti() {
+      for (let i = 0; i < 40; i++) {
+        const c = document.createElement("div");
+        c.classList.add("confetti");
+        c.style.left = Math.random() * 100 + "vw";
+        c.style.background = ["#ff4d4d", "#ffcc00", "#66cc66"][Math.floor(Math.random() * 3)];
+        c.style.animationDuration = (1 + Math.random()) + "s";
+        document.body.appendChild(c);
+        setTimeout(() => c.remove(), 2000);
+      }
+    }
+
+    /* ---------------------------------------------------
        STARTSKÄRM + SESSION
     --------------------------------------------------- */
     document.addEventListener("DOMContentLoaded", () => {
@@ -214,14 +256,12 @@ secret santa-lotteri!
 
       if (savedUser) {
         currentUserName = savedUser;
-        document.getElementById("main-section").style.display = "flex";
+        showPage("main-section");
         document.getElementById("logged-in-name").innerText = savedUser;
-        window.scrollTo(0, 0);
         return;
       }
 
-      document.getElementById("welcome-section").style.display = "flex";
-      window.scrollTo(0, 0);
+      showPage("welcome-section");
 
       const inputs = document.querySelectorAll(".pin-input");
       const submitBtn = document.getElementById("pin-submit");
@@ -239,9 +279,7 @@ secret santa-lotteri!
           const pin = [...inputs].map(i => i.value).join("");
           submitBtn.disabled = pin.length !== 4;
 
-          if (pin.length === 4) {
-            submitBtn.focus();
-          }
+          if (pin.length === 4) submitBtn.focus();
         });
 
         input.addEventListener("keydown", (e) => {
@@ -275,10 +313,7 @@ secret santa-lotteri!
     document.getElementById("pin-submit").addEventListener("click", async () => {
       const pin = [...document.querySelectorAll(".pin-input")]
         .map(i => i.value)
-        .join("")
-        .trim();
-
-      if (pin.length !== 4) return;
+        .join("");
 
       const { data } = await supa
         .from("secret_santa_pins")
@@ -288,20 +323,15 @@ secret santa-lotteri!
 
       if (!data) {
         document.getElementById("pin-error").innerText = "Fel PIN-kod";
-
-        const inputs = document.querySelectorAll(".pin-input");
-        inputs.forEach(i => i.value = "");
-        inputs[0].focus();
+        document.querySelectorAll(".pin-input").forEach(i => i.value = "");
+        document.getElementById("pin-0").focus();
         return;
       }
 
       currentUserName = data.name;
 
-      document.getElementById("welcome-section").style.display = "none";
-      document.getElementById("confirm-section").style.display = "flex";
+      showPage("confirm-section");
       document.getElementById("confirm-text").innerText = `Är du ${currentUserName}?`;
-
-      window.scrollTo(0, 0);
     });
 
     /* ---------------------------------------------------
@@ -310,11 +340,8 @@ secret santa-lotteri!
     document.getElementById("confirm-yes").addEventListener("click", () => {
       sessionStorage.setItem("loggedInUser", currentUserName);
 
-      document.getElementById("confirm-section").style.display = "none";
-      document.getElementById("main-section").style.display = "flex";
+      showPage("main-section");
       document.getElementById("logged-in-name").innerText = currentUserName;
-
-      window.scrollTo(0, 0);
     });
 
     document.getElementById("confirm-no").addEventListener("click", () => {
@@ -364,20 +391,22 @@ secret santa-lotteri!
 
       const receiver = group.assignments[giver];
 
-      await supa
-        .from("secret_santa")
-        .insert({ group_id: groupId, giver, receiver });
-
       const resultEl = document.getElementById("result");
 
-      resultEl.innerHTML =
-        `<span class="subtitle-large">Du fick:</span>\n` +
-        `<span class="bigger-text" style="color: var(--result-color);">${receiver}</span>`;
-
+      /* Visa "Du fick:" först */
+      resultEl.innerHTML = `<span class="subtitle-large">Du fick:</span>`;
       resultEl.classList.remove("reveal");
       setTimeout(() => resultEl.classList.add("reveal"), 50);
 
-      window.scrollTo(0, 0);
+      /* Efter 600 ms: visa namnet + konfetti */
+      setTimeout(() => {
+        resultEl.innerHTML =
+          `<span class="subtitle-large">Du fick:</span>\n` +
+          `<span class="bigger-text" style="color: var(--result-color);">${receiver}</span>`;
+
+        launchConfetti();
+
+      }, 600);
     }
 
     document.getElementById("draw-button").addEventListener("click", draw);
