@@ -2,7 +2,8 @@
 <html lang="sv">
 <head>
 <meta charset="UTF-8">
-<title>Test PIN</title>
+<title>Familjen Åhlunds häftiga secret santa 2025 🎅</title>
+<script src="https://unpkg.com/@supabase/supabase-js@2"></script>
 
 <style>
   body {
@@ -16,15 +17,22 @@
     font-size: 32px;
     text-align: center;
   }
+
+  #main-section {
+    display: none; /* göms tills PIN är godkänd */
+  }
+
+  #confirm-section {
+    display: none; /* visas efter PIN */
+  }
 </style>
 </head>
 
 <body>
 
-<h2>Test av PIN</h2>
-
+<!-- PIN-INMATNING -->
 <div id="pin-section">
-  <h3>Skriv in din PIN-kod</h3>
+  <h2>Skriv in din PIN-kod</h2>
 
   <div style="display:flex; gap:10px;">
     <input id="pin-0" maxlength="1" class="pin-input" />
@@ -37,27 +45,174 @@
   <p id="pin-error" style="color:red;"></p>
 </div>
 
+<!-- BEKRÄFTA NAMN -->
+<div id="confirm-section">
+  <h2 id="confirm-text"></h2>
+  <button id="confirm-yes">Ja</button>
+  <button id="confirm-no">Nej</button>
+</div>
+
+<!-- HUVUDSIDA (låst tills PIN är godkänd) -->
+<div id="main-section">
+  <h2>🎁 Secret Santa</h2>
+  <p>Välj vem som ska dra:</p>
+
+  <select id="giver"></select>
+  <button onclick="draw()">Dra namn</button>
+
+  <p id="result"></p>
+</div>
+
 <script>
-  const inputs = document.querySelectorAll(".pin-input");
-  const submitBtn = document.getElementById("pin-submit");
+/* ---------------- PIN LOGIK ---------------- */
 
-  inputs.forEach((input, index) => {
-    input.addEventListener("input", () => {
-      input.value = input.value.replace(/[^0-9]/g, "");
+const inputs = document.querySelectorAll(".pin-input");
+const submitBtn = document.getElementById("pin-submit");
+let currentUserName = null;
 
-      if (input.value && index < 3) {
-        inputs[index + 1].focus();
-      }
+inputs.forEach((input, index) => {
+  input.addEventListener("input", () => {
+    input.value = input.value.replace(/[^0-9]/g, "");
 
-      const pin = [...inputs].map(i => i.value).join("");
-      submitBtn.disabled = pin.length !== 4;
-    });
-  });
+    if (input.value && index < 3) {
+      inputs[index + 1].focus();
+    }
 
-  submitBtn.addEventListener("click", () => {
     const pin = [...inputs].map(i => i.value).join("");
-    alert("PIN är: " + pin);
+    submitBtn.disabled = pin.length !== 4;
   });
+});
+
+submitBtn.addEventListener("click", async () => {
+  const pin = [...inputs].map(i => i.value).join("");
+
+  // Hämta namn från Supabase baserat på PIN
+  const { data, error } = await supabase
+    .from("secret_santa_pins")
+    .select("name")
+    .eq("pin", pin)
+    .single();
+
+  if (error || !data) {
+    document.getElementById("pin-error").innerText = "Fel PIN-kod";
+    return;
+  }
+
+  currentUserName = data.name;
+
+  // Visa bekräftelse
+  document.getElementById("pin-section").style.display = "none";
+  document.getElementById("confirm-section").style.display = "block";
+  document.getElementById("confirm-text").innerText = `Är du ${currentUserName}?`;
+});
+
+/* ---------------- BEKRÄFTA NAMN ---------------- */
+
+document.getElementById("confirm-yes").addEventListener("click", () => {
+  document.getElementById("confirm-section").style.display = "none";
+  document.getElementById("main-section").style.display = "block";
+});
+
+document.getElementById("confirm-no").addEventListener("click", () => {
+  location.reload(); // börja om
+});
+
+/* ---------------- SUPABASE LOGIK ---------------- */
+
+const SUPABASE_URL = "https://qktwixlydcpjuvnbgxza.supabase.co";
+const SUPABASE_KEY = "DIN NYCKEL HÄR";
+const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+// Lista på deltagare
+const PARTICIPANTS = [
+  "Iren","Jonas","Joakim","Dunis","Juli","Sam","Klas","Martha",
+  "Ia","Lita","Kennedy","Johannes","Rebecka","Betty","Bodil",
+  "Anna","Essi","Udo"
+];
+
+const groupId = "familj2025";
+
+// Skapa säker lottning
+function createAssignments(names) {
+  let receivers;
+  do {
+    receivers = [...names];
+    for (let i = receivers.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [receivers[i], receivers[j]] = [receivers[j], receivers[i]];
+    }
+  } while (names.some((n, i) => n === receivers[i]));
+
+  return Object.fromEntries(names.map((n, i) => [n, receivers[i]]));
+}
+
+// Initiera grupp
+async function ensureGroup() {
+  const { data } = await supabase
+    .from("secret_santa_groups")
+    .select("*")
+    .eq("group_id", groupId)
+    .single();
+
+  if (!data) {
+    const assignments = createAssignments(PARTICIPANTS);
+    await supabase
+      .from("secret_santa_groups")
+      .insert({ group_id: groupId, assignments });
+  }
+}
+
+// Ladda givers som inte dragit ännu
+async function loadGivers() {
+  const { data } = await supabase
+    .from("secret_santa")
+    .select("giver")
+    .eq("group_id", groupId);
+
+  const used = data.map(x => x.giver);
+  const select = document.getElementById("giver");
+
+  select.innerHTML = "";
+
+  PARTICIPANTS
+    .filter(name => !used.includes(name))
+    .forEach(name => {
+      const option = document.createElement("option");
+      option.value = name;
+      option.textContent = name;
+      select.appendChild(option);
+    });
+
+  if (!select.children.length) {
+    select.innerHTML = "<option>Alla har dragit 🎄</option>";
+  }
+}
+
+// Dra namn
+async function draw() {
+  const giver = document.getElementById("giver").value;
+  if (!giver) return;
+
+  const { data: group } = await supabase
+    .from("secret_santa_groups")
+    .select("assignments")
+    .eq("group_id", groupId)
+    .single();
+
+  const receiver = group.assignments[giver];
+
+  await supabase
+    .from("secret_santa")
+    .insert({ group_id: groupId, giver, receiver });
+
+  document.getElementById("result").innerText =
+    `🎄 ${giver} fick: ${receiver}`;
+
+  loadGivers();
+}
+
+// Start
+ensureGroup().then(loadGivers);
 </script>
 
 </body>
