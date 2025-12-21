@@ -14,12 +14,11 @@
       background: url("https://images.unsplash.com/photo-1543589077-47d81606c1bf?auto=format&fit=crop&w=800&q=60")
                   no-repeat center/cover;
       min-height: 100vh;
-      overflow-x: hidden;
+      overflow: hidden;
 
       display: flex;
       justify-content: center;
-      align-items: flex-start;
-      padding-top: 8vh;
+      align-items: center; /* ← EXAKT CENTRERAD */
     }
 
     /* --- FÄRGER --- */
@@ -35,7 +34,7 @@
     .page-box {
       background: var(--rosa);
       width: min(95%, 700px);
-      height: 55vh; /* ← MINDRE HÖG */
+      height: 50vh; /* ← 50vh som du ville */
       padding: 25px 25px;
       border-radius: 25px;
       box-shadow: 0 4px 14px rgba(0,0,0,0.2);
@@ -71,6 +70,11 @@
       line-height: 1.2;
       white-space: pre-line;
       margin-bottom: 10px;
+    }
+
+    .emoji-line {
+      font-size: clamp(40px, 10vw, 60px);
+      margin: 10px 0 20px 0;
     }
 
     .subtitle-large {
@@ -190,6 +194,9 @@ superhäftiga
 secret santa-lotteri!
     </div>
 
+    <!-- PRESENT-EMOJI PÅ EGEN RAD -->
+    <div class="emoji-line">🎁</div>
+
     <div class="subtitle-large">Skriv in din pinkod</div>
 
     <div class="pin-wrapper">
@@ -261,7 +268,24 @@ secret santa-lotteri!
     }
 
     /* ---------------------------------------------------
-       STARTSKÄRM + SESSION
+       RESET FUNKTION
+    --------------------------------------------------- */
+    function resetAll() {
+      sessionStorage.clear();
+
+      document.querySelectorAll(".pin-input").forEach(i => i.value = "");
+      document.getElementById("pin-error").innerText = "";
+      document.getElementById("result").innerText = "";
+      document.getElementById("result").classList.remove("reveal");
+      document.getElementById("logged-in-name").innerText = "";
+
+      document.getElementById("restart-button").classList.remove("visible");
+
+      document.querySelectorAll(".confetti").forEach(c => c.remove());
+    }
+
+    /* ---------------------------------------------------
+       STARTSKÄRM
     --------------------------------------------------- */
     document.addEventListener("DOMContentLoaded", () => {
       resetAll();
@@ -301,23 +325,6 @@ secret santa-lotteri!
         });
       });
     });
-
-    /* ---------------------------------------------------
-       RESET FUNKTION
-    --------------------------------------------------- */
-    function resetAll() {
-      sessionStorage.clear();
-
-      document.querySelectorAll(".pin-input").forEach(i => i.value = "");
-      document.getElementById("pin-error").innerText = "";
-      document.getElementById("result").innerText = "";
-      document.getElementById("result").classList.remove("reveal");
-      document.getElementById("logged-in-name").innerText = "";
-
-      document.getElementById("restart-button").classList.remove("visible");
-
-      document.querySelectorAll(".confetti").forEach(c => c.remove());
-    }
 
     /* ---------------------------------------------------
        SUPABASE
@@ -381,34 +388,6 @@ secret santa-lotteri!
     /* ---------------------------------------------------
        SECRET SANTA-LOGIK
     --------------------------------------------------- */
-    function createAssignments(names) {
-      let receivers;
-      do {
-        receivers = [...names];
-        for (let i = receivers.length - 1; i > 0; i--) {
-          const j = Math.floor(Math.random() * (i + 1));
-          [receivers[i], receivers[j]] = [receivers[j], receivers[i]];
-        }
-      } while (names.some((n, i) => n === receivers[i]));
-
-      return Object.fromEntries(names.map((n, i) => [n, receivers[i]]));
-    }
-
-    async function ensureGroup() {
-      const { data } = await supa
-        .from("secret_santa_groups")
-        .select("*")
-        .eq("group_id", groupId)
-        .maybeSingle();
-
-      if (!data) {
-        const assignments = createAssignments(PARTICIPANTS);
-        await supa
-          .from("secret_santa_groups")
-          .insert({ group_id: groupId, assignments });
-      }
-    }
-
     async function draw() {
       const giver = currentUserName;
 
@@ -453,7 +432,6 @@ secret santa-lotteri!
       showPage("welcome-section");
     });
 
-    ensureGroup();
   </script>
 
 </body>
