@@ -19,14 +19,11 @@
       display: flex;
       justify-content: center;
       align-items: center;
-
-      /* Flytta rutan lite högre upp */
-      padding-top: 4vh;
     }
 
     /* --- FÄRGER --- */
     :root {
-      --rosa: rgba(255, 210, 220, 0.88); /* ← MER TRANSPARENT */
+      --rosa: rgba(255, 210, 220, 0.88); /* mer transparent */
       --rosa-dark: #d47a8c;
       --rosa-hover: #b85f72;
       --result-color: #0f7a0f;
@@ -37,7 +34,7 @@
     .page-box {
       background: var(--rosa);
       width: min(95%, 700px);
-      height: 50vh; /* ← 50vh */
+      height: 50vh;
       padding: 25px 25px;
       border-radius: 25px;
       box-shadow: 0 4px 14px rgba(0,0,0,0.2);
@@ -53,6 +50,9 @@
       text-align: center;
 
       position: relative;
+
+      /* Flytta rutan lite högre upp */
+      margin-top: -6vh;
     }
 
     /* Mindre luft på välkomstsidan */
@@ -197,7 +197,6 @@ superhäftiga
 secret santa-lotteri!
     </div>
 
-    <!-- PRESENT-EMOJI PÅ EGEN RAD -->
     <div class="emoji-line">🎁</div>
 
     <div class="subtitle-large">Skriv in din pinkod</div>
