@@ -18,12 +18,15 @@
 
       display: flex;
       justify-content: center;
-      align-items: center; /* ← EXAKT CENTRERAD */
+      align-items: center;
+
+      /* Flytta rutan lite högre upp */
+      padding-top: 4vh;
     }
 
     /* --- FÄRGER --- */
     :root {
-      --rosa: rgba(255, 210, 220, 0.92);
+      --rosa: rgba(255, 210, 220, 0.88); /* ← MER TRANSPARENT */
       --rosa-dark: #d47a8c;
       --rosa-hover: #b85f72;
       --result-color: #0f7a0f;
@@ -34,7 +37,7 @@
     .page-box {
       background: var(--rosa);
       width: min(95%, 700px);
-      height: 50vh; /* ← 50vh som du ville */
+      height: 50vh; /* ← 50vh */
       padding: 25px 25px;
       border-radius: 25px;
       box-shadow: 0 4px 14px rgba(0,0,0,0.2);
@@ -242,12 +245,12 @@ secret santa-lotteri!
     }
 
     /* ---------------------------------------------------
-       GULD-KONFETTI EXPLOSION
+       GULD-KONFETTI — FIXAD STARTPUNKT
     --------------------------------------------------- */
     function launchConfettiFromElement(el) {
       const rect = el.getBoundingClientRect();
-      const originX = rect.left + rect.width / 2;
-      const originY = rect.top + rect.height / 2;
+      const originX = rect.left + rect.width / 2 + window.scrollX;
+      const originY = rect.top + rect.height / 2 + window.scrollY;
 
       for (let i = 0; i < 180; i++) {
         const c = document.createElement("div");
